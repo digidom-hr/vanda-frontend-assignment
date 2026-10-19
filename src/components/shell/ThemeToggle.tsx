@@ -1,16 +1,14 @@
 "use client";
 
 import { useSyncExternalStore, type ReactNode } from "react";
-import { ToggleButton, ToggleButtonGroup, type Key } from "react-aria-components";
+import { SegmentedControl } from "@/components/controls/SegmentedControl";
 import {
   applyThemePreference,
-  isThemePreference,
   readThemePreference,
   storeThemePreference,
   THEME_STORAGE_KEY,
   type ThemePreference,
 } from "@/lib/theme";
-import styles from "./ThemeToggle.module.css";
 
 const CHANGE_EVENT = "themepreferencechange";
 
@@ -86,25 +84,12 @@ export function ThemeToggle() {
   // the client value takes over after hydration without a mismatch.
   const preference = useSyncExternalStore(subscribe, readThemePreference, () => "system" as const);
 
-  const onSelectionChange = (keys: Set<Key>) => {
-    const [next] = keys;
-    if (isThemePreference(next)) setPreference(next);
-  };
-
   return (
-    <ToggleButtonGroup
-      aria-label="Theme"
-      selectionMode="single"
-      disallowEmptySelection
-      selectedKeys={[preference]}
-      onSelectionChange={onSelectionChange}
-      className={styles.group}
-    >
-      {OPTIONS.map((option) => (
-        <ToggleButton key={option.id} id={option.id} aria-label={option.label} className={styles.button}>
-          {option.icon}
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
+    <SegmentedControl
+      label="Theme"
+      value={preference}
+      onChange={setPreference}
+      options={OPTIONS.map((option) => ({ id: option.id, label: option.icon, ariaLabel: option.label }))}
+    />
   );
 }
