@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { findService, SERVICES } from "@/services/registry";
+import { Suspense } from "react";
+import { ServiceDashboard } from "@/components/dashboard/ServiceDashboard";
+import { findService, isServiceId, SERVICES } from "@/services/registry";
 import styles from "./page.module.css";
 
 interface ServicePageProps {
@@ -20,15 +22,14 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
 }
 
 export default async function ServicePage({ params }: ServicePageProps) {
-  const service = findService((await params).service);
-  if (!service) notFound();
+  const id = (await params).service;
+  if (!findService(id) || !isServiceId(id)) notFound();
 
+  // The dashboard reads its view from the URL's query string, so on this
+  // statically generated page it must render inside a Suspense boundary.
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{service.label}</h1>
-        <p className={styles.description}>{service.description}</p>
-      </header>
-    </div>
+    <Suspense fallback={<p className={styles.loading}>Loading {findService(id)?.label}</p>}>
+      <ServiceDashboard serviceId={id} />
+    </Suspense>
   );
 }

@@ -1,0 +1,215 @@
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* The series list stays in view while the panels scroll. */
+.sidebar {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+  display: grid;
+  height: calc(100dvh - 6rem);
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.pickerLoading {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2.25rem,
+    var(--color-grid) 2.25rem,
+    var(--color-grid) calc(2.25rem + 1px)
+  );
+}
+
+.main {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.heading {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-stretch: var(--font-width-expanded);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--tracking-title);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  color: var(--color-graphite);
+  font-size: var(--text-sm);
+}
+
+.notice {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-highlighter);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+}
+
+/* Panels: the primary chart is wide and tall; secondary ones sit beside it. */
+.panels {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.primary {
+  grid-column: span 8;
+  grid-row: span 2;
+}
+
+.panels > .primary:only-child {
+  grid-column: span 12;
+}
+
+.secondary {
+  grid-column: span 4;
+}
+
+.wide {
+  grid-column: span 12;
+}
+
+.changeSeries {
+  display: none;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.changeSeries[data-focus-visible] {
+  box-shadow: var(--focus-ring);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: color-mix(in srgb, var(--color-ink) 28%, transparent);
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--color-surface);
+}
+
+.sheetDialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-4);
+  outline: none;
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheetHead .changeSeries {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sheetTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.status {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+  padding-top: var(--space-10);
+  color: var(--color-graphite);
+}
+
+.statusTitle {
+  color: var(--color-ink);
+  font-size: var(--text-lg);
+  font-stretch: var(--font-width-expanded);
+  font-weight: var(--weight-title);
+}
+
+.retry {
+  justify-self: start;
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+@media (max-width: 75rem) {
+  .primary {
+    grid-column: span 12;
+    grid-row: auto;
+  }
+
+  .secondary {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 60rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .changeSeries {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 40rem) {
+  .secondary {
+    grid-column: span 12;
+  }
+}
