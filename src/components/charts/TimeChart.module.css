@@ -1,0 +1,33 @@
+.frame {
+  position: relative;
+  min-width: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+/* Refetch keeps the previous frame, dimmed: no skeleton flash, no layout jump. */
+.frame[data-refreshing] {
+  opacity: 0.55;
+}
+
+.container {
+  width: 100%;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-control);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(25% - 1px),
+    var(--color-grid) calc(25% - 1px),
+    var(--color-grid) 25%
+  );
+}
+
+/* Highcharts' keyboard focus ring follows the design system. */
+.container :global(.highcharts-a11y-focus-indicator) path,
+.container :global(.highcharts-focus-border) {
+  stroke: var(--color-ink);
+}
