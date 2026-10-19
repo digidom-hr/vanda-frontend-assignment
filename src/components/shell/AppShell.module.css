@@ -35,8 +35,8 @@
 
 .bar {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "wordmark nav tools";
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "wordmark search nav tools";
   align-items: center;
   gap: var(--space-6);
   max-width: var(--content-max);
@@ -54,6 +54,12 @@
   letter-spacing: var(--tracking-title);
   text-decoration: none;
   border-radius: var(--radius-control);
+}
+
+.search {
+  grid-area: search;
+  display: flex;
+  min-width: 0;
 }
 
 .tools {
@@ -79,10 +85,10 @@
 /* Phones: wordmark and tools on the first row, services scroll on the second. */
 @media (max-width: 40rem) {
   .bar {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-areas:
-      "wordmark tools"
-      "nav nav";
+      "wordmark search tools"
+      "nav nav nav";
     gap: var(--space-1) var(--space-3);
     padding-bottom: 0;
   }
