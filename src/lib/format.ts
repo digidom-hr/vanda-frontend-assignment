@@ -39,25 +39,17 @@ export function formatValue(value: number | null | undefined, unit: string, deci
   return TIGHT_UNITS.has(unit) ? `${number}${unit}` : `${number} ${unit}`;
 }
 
-const DAY_FORMAT = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC",
-});
-const MINUTE_FORMAT = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  hourCycle: "h23",
-  timeZone: "UTC",
-});
+// Month names are spelled out rather than taken from Intl: ICU versions differ
+// ("Sep" vs "Sept"), and the server and the browser must render identical text.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /** A timestamp as analysts read it: "3 Mar 2025", or "3 Mar 2025, 14:30 UTC" for intraday data. */
 export function formatTimestamp(ms: number, intraday = false): string {
-  return intraday ? `${MINUTE_FORMAT.format(ms)} UTC` : DAY_FORMAT.format(ms);
+  const d = new Date(ms);
+  const date = `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  if (!intraday) return date;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
 }
 
 /** Escapes text for safe insertion into HTML strings (e.g. chart tooltips). */

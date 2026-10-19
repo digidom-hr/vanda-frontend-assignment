@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Facet, SeriesMeta } from "@/services/types";
-import { searchCatalogs, words, type CatalogInput } from "./search";
+import { matchesQuery, searchCatalogs, words, type CatalogInput } from "./search";
 
 const s = (service: string, id: string, name: string, facets: [string, string][] = []): SeriesMeta => ({
   service,
@@ -148,5 +148,19 @@ describe("searchCatalogs", () => {
       { service: "y", series: [s("y", "Y-1", "Same Name")] },
     ];
     expect(searchCatalogs(twins, "same").map((h) => h.series.service)).toEqual(["x", "y"]);
+  });
+});
+
+describe("matchesQuery", () => {
+  const acme = s("alpha", "A-0001", "Acme Corp (ACMC)", [["group", "Technology"]]);
+
+  it("uses the same rule as the global search", () => {
+    expect(matchesQuery(acme, "")).toBe(true);
+    expect(matchesQuery(acme, "acme corp")).toBe(true);
+    expect(matchesQuery(acme, "acmc")).toBe(true);
+    expect(matchesQuery(acme, "tech")).toBe(true);
+    expect(matchesQuery(acme, "a-00")).toBe(true);
+    expect(matchesQuery(acme, "corp energy")).toBe(false);
+    expect(matchesQuery(acme, "cme")).toBe(false);
   });
 });
