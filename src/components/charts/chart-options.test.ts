@@ -129,6 +129,11 @@ describe("buildChartOptions", () => {
     ]);
   });
 
+  it("uses an ordinal x-axis for intraday data only", () => {
+    expect(get(buildChartOptions(spec({ intraday: true }), TOKENS), "xAxis", "ordinal")).toBe(true);
+    expect(get(buildChartOptions(spec(), TOKENS), "xAxis", "ordinal")).toBe(false);
+  });
+
   it("applies a visible range without dropping data outside it", () => {
     const options = buildChartOptions(spec({ range: { min: T[1] as number, max: T[2] as number } }), TOKENS);
     expect(get(options, "xAxis")).toMatchObject({ min: T[1], max: T[2] });

@@ -2,6 +2,11 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import ServicePage, { generateMetadata, generateStaticParams } from "./page";
 
+// The dashboard has its own tests; here we only check the page wires it up.
+vi.mock("@/components/dashboard/ServiceDashboard", () => ({
+  ServiceDashboard: ({ serviceId }: { serviceId: string }) => <p>Dashboard for {serviceId}</p>,
+}));
+
 vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
@@ -15,9 +20,9 @@ describe("service page", () => {
     expect(generateStaticParams()).toEqual([{ service: "alpha" }, { service: "bravo" }, { service: "charlie" }]);
   });
 
-  it("renders the service heading and metadata", async () => {
+  it("renders the service's dashboard and metadata", async () => {
     render(await ServicePage(params("bravo")));
-    expect(screen.getByRole("heading", { level: 1, name: "Bravo" })).toBeInTheDocument();
+    expect(screen.getByText("Dashboard for bravo")).toBeInTheDocument();
     expect(await generateMetadata(params("bravo"))).toMatchObject({ title: "Bravo" });
   });
 

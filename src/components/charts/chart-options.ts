@@ -196,7 +196,9 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
     },
     xAxis: {
       type: "datetime",
-      ordinal: false,
+      // Intraday data skips nights and weekends (no long lines across closed
+      // markets); daily data keeps a true calendar axis.
+      ordinal: Boolean(spec.intraday),
       min: spec.range?.min,
       max: spec.range?.max,
       lineColor: tokens.rule,
