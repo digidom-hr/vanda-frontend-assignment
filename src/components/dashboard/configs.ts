@@ -1,4 +1,5 @@
 import { alphaDashboard } from "@/services/alpha/dashboard";
+import { bravoDashboard } from "@/services/bravo/dashboard";
 import type { ServiceId } from "@/services/registry";
 import { primaryPanel, type DashboardConfig } from "./panels";
 
@@ -8,11 +9,7 @@ import { primaryPanel, type DashboardConfig } from "./panels";
  */
 export const DASHBOARDS: Readonly<Record<ServiceId, DashboardConfig>> = {
   alpha: alphaDashboard,
-  bravo: {
-    groupBy: "region",
-    overviewField: "net",
-    panels: [primaryPanel({ field: "net", title: "Net flow", rebase: false })],
-  },
+  bravo: bravoDashboard,
   charlie: {
     groupBy: "category",
     overviewField: "value",

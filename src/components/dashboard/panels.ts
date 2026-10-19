@@ -4,7 +4,7 @@
  * means adding a definition, not a page.
  */
 import type { ChartSpec } from "@/components/charts/chart-options";
-import { levelChart, type PresetSeries } from "@/components/charts/presets";
+import { flowChart, levelChart, type PresetSeries } from "@/components/charts/presets";
 import { rebaseTo100 } from "@/lib/compare";
 import { applyTransforms, transformLabel, transformedUnit, type TransformSpec } from "@/lib/transforms/pipeline";
 import { getField } from "@/services/registry";
@@ -31,6 +31,19 @@ export interface PanelDefinition {
   readonly subtitle?: (ctx: PanelContext) => string;
   /** The chart for the current context, or null when this panel has nothing to show. */
   readonly build: (ctx: PanelContext) => ChartSpec | null;
+  /**
+   * Whether the panel applies to the shown series at all (e.g. gross flow for
+   * a net-only series). Unavailable panels are not rendered. Defaults to:
+   * the primary series has every field the panel needs.
+   */
+  readonly isAvailable?: (ctx: Pick<PanelContext, "series">) => boolean;
+}
+
+/** True when the primary series has every field the panel needs. */
+export function panelAvailable(panel: PanelDefinition, ctx: Pick<PanelContext, "series">): boolean {
+  if (panel.isAvailable) return panel.isAvailable(ctx);
+  const primary = ctx.series[0];
+  return primary !== undefined && panel.fields.every((f) => primary.fields.includes(f));
 }
 
 export interface DashboardConfig {
@@ -64,6 +77,12 @@ export function primaryPanel(options: {
   readonly rebase: boolean;
   /** Draw a single series as an area: for levels (price), not for values that cross zero. */
   readonly fill?: boolean;
+  /**
+   * level: lines/area (price, scores). flow: per-period signed amounts drawn as
+   * columns; comparisons and transforms switch to lines, since several column
+   * series on one chart become unreadable.
+   */
+  readonly style?: "level" | "flow";
   readonly bodyHeight?: number;
 }): PanelDefinition {
   const willRebase = (ctx: PanelContext) =>
@@ -94,16 +113,19 @@ export function primaryPanel(options: {
         return { id: s.id, name: s.name, t, values: rebase ? rebaseTo100(t, transformed, ctx.range.min) : transformed };
       });
       if (series.every((s) => s.t.length === 0)) return null;
-      return levelChart({
+      const base = {
         title: options.title,
         description: `${options.title} of ${ctx.series.map((s) => s.name).join(", ")}.`,
         unit,
         height: options.bodyHeight ?? 440,
         intraday: ctx.frequency === "5min",
         range: ctx.range,
-        fill: options.fill && ctx.transforms.length === 0,
-        series,
-      });
+      };
+      const [only] = series;
+      if (options.style === "flow" && only && series.length === 1 && ctx.transforms.length === 0) {
+        return flowChart({ ...base, series: only });
+      }
+      return levelChart({ ...base, fill: options.fill && ctx.transforms.length === 0, series });
     },
   };
 }
@@ -129,26 +151,33 @@ export function fieldPanel(options: {
   readonly subtitle?: string;
   readonly layout?: PanelDefinition["layout"];
   readonly bodyHeight?: number;
+  /** Fields needed besides `field` (for computed values). */
+  readonly extraFields?: readonly string[];
+  /** Derive the plotted values from the series' columns (default: the field itself). */
+  readonly compute?: (fields: SeriesColumns["fields"], t: readonly number[], ctx: PanelContext) => (number | null)[];
+  /** Unit of computed values, when it differs from the field's. */
+  readonly unit?: string;
   readonly chart: (base: ChartBase, series: PresetSeries) => ChartSpec;
 }): PanelDefinition {
   const bodyHeight = options.bodyHeight ?? 180;
   return {
-    id: `field-${options.field}`,
+    id: `field-${options.field}-${options.title}`,
     title: options.title,
-    fields: [options.field],
+    fields: [options.field, ...(options.extraFields ?? [])],
     layout: options.layout ?? "secondary",
     bodyHeight,
     subtitle: options.subtitle ? () => options.subtitle as string : undefined,
     build: (ctx) => {
       const primary = ctx.series[0];
       const columns = primary ? ctx.columns.get(primary.id) : undefined;
-      const values = columns?.fields[options.field];
-      if (!primary || !columns || !values || columns.t.length === 0) return null;
+      if (!primary || !columns || columns.t.length === 0) return null;
+      const values = options.compute ? options.compute(columns.fields, columns.t, ctx) : columns.fields[options.field];
+      if (!values) return null;
       return options.chart(
         {
           title: options.title,
           description: `${options.title} of ${primary.name}.`,
-          unit: fieldUnit(ctx.service, primary, options.field),
+          unit: options.unit ?? fieldUnit(ctx.service, primary, options.field),
           height: bodyHeight,
           intraday: ctx.frequency === "5min",
           range: ctx.range,

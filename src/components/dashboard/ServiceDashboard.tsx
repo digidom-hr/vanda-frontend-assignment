@@ -24,7 +24,7 @@ import { MAX_SELECTED_SERIES, resolveRange } from "@/lib/url-state";
 import { getService, type ServiceId } from "@/services/registry";
 import type { SeriesColumns } from "@/services/types";
 import { DASHBOARDS } from "./configs";
-import type { PanelContext, PanelDefinition } from "./panels";
+import { panelAvailable, type PanelContext, type PanelDefinition } from "./panels";
 import styles from "./ServiceDashboard.module.css";
 import { SeriesPicker, type SeriesPickerProps } from "./SeriesPicker";
 import { TimeRail } from "./TimeRail";
@@ -76,7 +76,12 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   const extent = useMemo(() => extentOf(overview.data?.series ?? []), [overview.data]);
   const overviewSeries = overview.data?.series[0];
 
-  const fields = useMemo(() => [...new Set(config.panels.flatMap((p) => p.fields))], [config.panels]);
+  // Only the panels shown for this selection: e.g. a net-only series must not request "gross".
+  const panels = useMemo(
+    () => config.panels.filter((panel) => panelAvailable(panel, { series: selection.series })),
+    [config.panels, selection.series],
+  );
+  const fields = useMemo(() => [...new Set(panels.flatMap((p) => p.fields))], [panels]);
   const fetchRange = fetchWindow(frequency, rangeSelection, extent);
   const main = useTimeseries(
     serviceId,
@@ -209,7 +214,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
 
         <ChartSyncProvider>
           <div className={styles.panels}>
-            {config.panels.map((panel) => (
+            {panels.map((panel) => (
               <DashboardPanel
                 key={panel.id}
                 panel={panel}
