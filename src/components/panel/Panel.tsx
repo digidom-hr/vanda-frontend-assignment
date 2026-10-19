@@ -1,8 +1,8 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
-import { ToggleButton, ToggleButtonGroup, type Key } from "react-aria-components";
 import type { TableData } from "@/components/charts/chart-table";
+import { SegmentedControl } from "@/components/controls/SegmentedControl";
 import { ApiError } from "@/lib/api-client";
 import { DataTable } from "./DataTable";
 import styles from "./Panel.module.css";
@@ -117,21 +117,16 @@ export function Panel({
         <div className={styles.headerEnd}>
           {readout && <div className={styles.readout}>{readout}</div>}
           {table && (
-            <ToggleButtonGroup
-              aria-label={`${title} view`}
-              selectionMode="single"
-              disallowEmptySelection
-              selectedKeys={[view]}
-              onSelectionChange={(keys: Set<Key>) => setView(([...keys][0] as View | undefined) ?? "chart")}
-              className={styles.views}
-            >
-              <ToggleButton id="chart" className={styles.viewButton}>
-                Chart
-              </ToggleButton>
-              <ToggleButton id="table" className={styles.viewButton}>
-                Table
-              </ToggleButton>
-            </ToggleButtonGroup>
+            <SegmentedControl
+              label={`${title} view`}
+              size="small"
+              value={view}
+              onChange={setView}
+              options={[
+                { id: "chart", label: "Chart" },
+                { id: "table", label: "Table" },
+              ]}
+            />
           )}
         </div>
       </header>
