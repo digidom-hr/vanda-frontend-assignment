@@ -35,6 +35,7 @@ describe("number and date formatting", () => {
   it("formats daily and intraday timestamps in UTC", () => {
     expect(formatTimestamp(Date.UTC(2025, 2, 3))).toBe("3 Mar 2025");
     expect(formatTimestamp(Date.UTC(2025, 2, 3, 14, 30), true)).toBe("3 Mar 2025, 14:30 UTC");
+    expect(formatTimestamp(Date.UTC(2025, 8, 30, 9, 5), true)).toBe("30 Sep 2025, 09:05 UTC");
   });
 
   it("escapes HTML", () => {

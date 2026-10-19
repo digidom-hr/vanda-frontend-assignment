@@ -132,3 +132,14 @@ export function searchCatalogs(catalogs: readonly CatalogInput[], rawQuery: stri
   );
   return scored.map(({ series, tier }) => ({ series, tier }));
 }
+
+/**
+ * Whether one series matches a query by the same rule as the global search
+ * (used to filter lists, e.g. the series picker). An empty query matches.
+ */
+export function matchesQuery(series: SeriesMeta, query: string): boolean {
+  const tokens = words(query);
+  if (tokens.length === 0) return true;
+  const entry = indexCatalog([series])[0];
+  return entry !== undefined && score(entry, tokens, tokens.join("")) !== null;
+}
