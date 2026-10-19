@@ -1,0 +1,11 @@
+.next/
+node_modules/
+mock-api/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
+.claude/
+CLAUDE.md
+# Starter brief: left untouched until the docs commit
+README.md

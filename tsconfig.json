@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "es2023"
-    ],
+    "lib": ["dom", "dom.iterable", "es2023"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -28,9 +24,7 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "esModuleInterop": true
   },
@@ -42,8 +36,5 @@
     ".next/dev/types/**/*.ts",
     "*.config.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "mock-api"
-  ]
+  "exclude": ["node_modules", "mock-api"]
 }
