@@ -2,6 +2,7 @@
  * Response contracts of the app's own API (`/api/...`). Shared by the route
  * handlers that produce them and the browser code that consumes them.
  */
+import type { MatchTier } from "@/lib/search";
 import type { CharlieLatest } from "./charlie/meta";
 import type { Frequency, SeriesColumns, SeriesMeta } from "./types";
 
@@ -34,4 +35,29 @@ export interface TimeseriesResponse {
 
 export interface CharlieLatestResponse {
   readonly latest: readonly CharlieLatest[];
+}
+
+export interface SearchResult {
+  readonly service: string;
+  readonly id: string;
+  readonly name: string;
+  readonly facets: SeriesMeta["facets"];
+  readonly frequencies: SeriesMeta["frequencies"];
+  readonly unit: string;
+  /** Why this result matched; drives ranking and lets the UI explain facet-only matches. */
+  readonly match: MatchTier;
+}
+
+export interface ServiceSearchStatus {
+  readonly service: string;
+  readonly status: "ok" | "unavailable";
+}
+
+export interface SearchResponse {
+  readonly query: string;
+  /** Matches before `limit` was applied. */
+  readonly total: number;
+  readonly results: readonly SearchResult[];
+  /** One entry per service; results are partial when any is unavailable. */
+  readonly services: readonly ServiceSearchStatus[];
 }

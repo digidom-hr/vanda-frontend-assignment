@@ -2,7 +2,13 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ApiErrorBody, CharlieLatestResponse, SeriesListResponse, TimeseriesResponse } from "@/services/api-types";
+import type {
+  ApiErrorBody,
+  CharlieLatestResponse,
+  SearchResponse,
+  SeriesListResponse,
+  TimeseriesResponse,
+} from "@/services/api-types";
 
 const BASE = "http://upstream.test";
 const server = setupServer();
@@ -111,5 +117,40 @@ describe("GET /api/charlie/latest", () => {
         signal: "low",
       },
     ]);
+  });
+});
+
+describe("GET /api/search", () => {
+  const ALPHA_SERIES = {
+    series_id: "A-0001",
+    name: "Acme Corp (ACMC)",
+    group: "Technology",
+    frequencies: ["daily"],
+    unit: "USD",
+  };
+
+  it("returns partial results without caching them when a service is down", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    server.use(
+      http.get(`${BASE}/alpha/series`, () => page([ALPHA_SERIES])),
+      http.get(`${BASE}/bravo/series`, () => HttpResponse.error()),
+      http.get(`${BASE}/charlie/series`, () => page([{ ...CHARLIE_SERIES, name: "Acme Corp Composite" }])),
+    );
+    const { GET } = await import("./search/route");
+    const res = await GET(new Request("http://app.test/api/search?q=acme"));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    const body = (await res.json()) as SearchResponse;
+    expect(body.results.map((r) => r.id)).toEqual(["A-0001", "C-0001"]);
+    expect(body.services).toContainEqual({ service: "bravo", status: "unavailable" });
+  });
+
+  it("returns a retryable 503 when no service can be searched", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    server.use(http.get(`${BASE}/:service/series`, () => HttpResponse.error()));
+    const { GET } = await import("./search/route");
+    const res = await GET(new Request("http://app.test/api/search?q=acme"));
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as ApiErrorBody).error.retryable).toBe(true);
   });
 });
