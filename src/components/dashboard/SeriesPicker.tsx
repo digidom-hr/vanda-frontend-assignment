@@ -84,6 +84,12 @@ export function SeriesPicker({
     if (reason) blocked.set(s.id, reason);
   }
 
+  // React Aria re-renders a row only when its item changes. These rows also
+  // depend on outside state (which series are shown, why some can't be
+  // compared), so pass it as dependencies, as primitives that change only
+  // when the values do.
+  const dependencies = [selected.join(","), [...blocked].map(([id, reason]) => `${id}:${reason}`).join("|")];
+
   return (
     <div className={styles.picker}>
       <SearchField aria-label={`Filter ${label}`} value={filter} onChange={setFilter} className={styles.filter}>
@@ -96,14 +102,15 @@ export function SeriesPicker({
         // separate checkbox in each row (React Aria's toggle selection would
         // turn every row press into a toggle once anything is selected).
         onAction={(key: Key) => onShow(String(key))}
+        dependencies={dependencies}
         className={styles.list}
         renderEmptyState={() => <p className={styles.empty}>No series match &ldquo;{filter}&rdquo;.</p>}
       >
-        <Collection items={groups}>
+        <Collection items={groups} dependencies={dependencies}>
           {(group) => (
             <GridListSection id={group.id} className={styles.section}>
               <GridListHeader className={styles.header}>{group.label}</GridListHeader>
-              <Collection items={group.series}>
+              <Collection items={group.series} dependencies={dependencies}>
                 {(s) => {
                   const reason = blocked.get(s.id);
                   const isPrimary = s.id === primary;

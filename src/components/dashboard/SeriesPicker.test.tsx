@@ -53,6 +53,23 @@ describe("SeriesPicker", () => {
     ).toHaveLength(4);
   });
 
+  it("updates the marks when the selection changes from outside (e.g. the signal board)", () => {
+    const props = {
+      label: "Bravo series",
+      series: SERIES,
+      groupBy: "region",
+      maxSelected: 6,
+      onShow: () => {},
+      onToggleCompare: () => {},
+    };
+    const { rerender } = render(<SeriesPicker {...props} selected={["B-0101"]} />);
+    rerender(<SeriesPicker {...props} selected={["B-0106"]} />);
+    expect(row("Europe Retail Activity")).toHaveAttribute("data-primary");
+    expect(row("North America Retail Activity")).not.toHaveAttribute("data-primary");
+    expect(screen.getByRole("checkbox", { name: /^Compare Europe Retail Activity/ })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: /^Compare North America Retail Activity/ })).not.toBeChecked();
+  });
+
   it("marks the shown series and its comparison checkbox", () => {
     setup();
     expect(row("North America Retail Activity")).toHaveAttribute("data-primary");

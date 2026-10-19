@@ -1,7 +1,8 @@
 import { alphaDashboard } from "@/services/alpha/dashboard";
 import { bravoDashboard } from "@/services/bravo/dashboard";
+import { charlieDashboard } from "@/services/charlie/dashboard";
 import type { ServiceId } from "@/services/registry";
-import { primaryPanel, type DashboardConfig } from "./panels";
+import type { DashboardConfig } from "./panels";
 
 /**
  * What each service's page shows. Keyed by every registered service, so a
@@ -10,9 +11,5 @@ import { primaryPanel, type DashboardConfig } from "./panels";
 export const DASHBOARDS: Readonly<Record<ServiceId, DashboardConfig>> = {
   alpha: alphaDashboard,
   bravo: bravoDashboard,
-  charlie: {
-    groupBy: "category",
-    overviewField: "value",
-    panels: [primaryPanel({ field: "value", title: "Score", rebase: false })],
-  },
+  charlie: charlieDashboard,
 };
