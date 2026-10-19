@@ -3,6 +3,7 @@
  * and the generic ServiceDashboard renders them. Adding a panel or a service
  * means adding a definition, not a page.
  */
+import type { ComponentType } from "react";
 import type { ChartSpec } from "@/components/charts/chart-options";
 import { flowChart, levelChart, type PresetSeries } from "@/components/charts/presets";
 import { rebaseTo100 } from "@/lib/compare";
@@ -20,17 +21,16 @@ export interface PanelContext {
   readonly transforms: readonly TransformSpec[];
 }
 
-export interface PanelDefinition {
+interface PanelBase {
   readonly id: string;
   readonly title: string;
-  /** Fields this panel needs; the page requests the union for all panels. */
+  /** Fields this panel needs; the page requests the union for all shown panels. */
   readonly fields: readonly string[];
-  /** primary: the large chart that receives transforms and comparisons; half: half the row; wide: full row. */
-  readonly layout: "primary" | "secondary" | "half" | "wide";
-  readonly bodyHeight: number;
-  readonly subtitle?: (ctx: PanelContext) => string;
-  /** The chart for the current context, or null when this panel has nothing to show. */
-  readonly build: (ctx: PanelContext) => ChartSpec | null;
+  /**
+   * primary: the large chart that receives transforms and comparisons;
+   * sidebar: beside the primary panel, two rows tall; half: half a row; wide: a full row.
+   */
+  readonly layout: "primary" | "secondary" | "sidebar" | "half" | "wide";
   /**
    * Whether the panel applies to the shown series at all (e.g. gross flow for
    * a net-only series). Unavailable panels are not rendered. Defaults to:
@@ -38,6 +38,30 @@ export interface PanelDefinition {
    */
   readonly isAvailable?: (ctx: Pick<PanelContext, "series">) => boolean;
 }
+
+/** A chart panel: the page fetches its fields and renders the spec in a Panel. */
+export interface ChartPanelDefinition extends PanelBase {
+  readonly kind?: "chart";
+  readonly bodyHeight: number;
+  readonly subtitle?: (ctx: PanelContext) => string;
+  /** The chart for the current context, or null when this panel has nothing to show. */
+  readonly build: (ctx: PanelContext) => ChartSpec | null;
+}
+
+export interface CustomPanelProps {
+  readonly ctx: PanelContext | null;
+  /** Show only this series (e.g. a row pressed in a list). */
+  readonly onShowSeries: (id: string) => void;
+  readonly className?: string;
+}
+
+/** Any other panel (e.g. a list): a component that renders its own Panel and loads its own data. */
+export interface CustomPanelDefinition extends PanelBase {
+  readonly kind: "custom";
+  readonly Component: ComponentType<CustomPanelProps>;
+}
+
+export type PanelDefinition = ChartPanelDefinition | CustomPanelDefinition;
 
 /** True when the primary series has every field the panel needs. */
 export function panelAvailable(panel: PanelDefinition, ctx: Pick<PanelContext, "series">): boolean {
@@ -84,7 +108,10 @@ export function primaryPanel(options: {
    */
   readonly style?: "level" | "flow";
   readonly bodyHeight?: number;
-}): PanelDefinition {
+  /** Signed values: draw a zero baseline. */
+  readonly zeroLine?: boolean;
+  readonly thresholds?: ChartSpec["thresholds"];
+}): ChartPanelDefinition {
   const willRebase = (ctx: PanelContext) =>
     options.rebase && ctx.series.length > 1 && transformedUnit("level", ctx.transforms) === "level"; // % and σ are already comparable
 
@@ -120,6 +147,8 @@ export function primaryPanel(options: {
         height: options.bodyHeight ?? 440,
         intraday: ctx.frequency === "5min",
         range: ctx.range,
+        zeroLine: options.zeroLine,
+        thresholds: options.thresholds,
       };
       const [only] = series;
       if (options.style === "flow" && only && series.length === 1 && ctx.transforms.length === 0) {
@@ -158,7 +187,7 @@ export function fieldPanel(options: {
   /** Unit of computed values, when it differs from the field's. */
   readonly unit?: string;
   readonly chart: (base: ChartBase, series: PresetSeries) => ChartSpec;
-}): PanelDefinition {
+}): ChartPanelDefinition {
   const bodyHeight = options.bodyHeight ?? 180;
   return {
     id: `field-${options.field}-${options.title}`,

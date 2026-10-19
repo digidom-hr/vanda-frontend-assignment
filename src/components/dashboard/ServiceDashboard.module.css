@@ -99,24 +99,31 @@
   gap: var(--space-3);
 }
 
-.primary {
+/* Panel layouts (prefixed so they can't collide with the page's own classes). */
+.layoutPrimary {
   grid-column: span 8;
   grid-row: span 2;
 }
 
-.panels > .primary:only-child {
+.panels > .layoutPrimary:only-child {
   grid-column: span 12;
 }
 
-.secondary {
+.layoutSecondary {
   grid-column: span 4;
 }
 
-.half {
+.layoutHalf {
   grid-column: span 6;
 }
 
-.wide {
+/* Beside the primary panel, as tall as it. */
+.layoutSidebar {
+  grid-column: span 4;
+  grid-row: span 2;
+}
+
+.layoutWide {
   grid-column: span 12;
 }
 
@@ -203,12 +210,13 @@
 }
 
 @media (max-width: 75rem) {
-  .primary {
+  .layoutPrimary,
+  .layoutSidebar {
     grid-column: span 12;
     grid-row: auto;
   }
 
-  .secondary {
+  .layoutSecondary {
     grid-column: span 6;
   }
 }
@@ -229,8 +237,8 @@
 }
 
 @media (max-width: 40rem) {
-  .secondary,
-  .half {
+  .layoutSecondary,
+  .layoutHalf {
     grid-column: span 12;
   }
 }

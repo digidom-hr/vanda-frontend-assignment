@@ -24,11 +24,20 @@ import { MAX_SELECTED_SERIES, resolveRange } from "@/lib/url-state";
 import { getService, type ServiceId } from "@/services/registry";
 import type { SeriesColumns } from "@/services/types";
 import { DASHBOARDS } from "./configs";
-import { panelAvailable, type PanelContext, type PanelDefinition } from "./panels";
+import { panelAvailable, type ChartPanelDefinition, type PanelContext, type PanelDefinition } from "./panels";
 import styles from "./ServiceDashboard.module.css";
 import { SeriesPicker, type SeriesPickerProps } from "./SeriesPicker";
 import { TimeRail } from "./TimeRail";
 import { FrequencyControl, RangeControl } from "./ViewControls";
+
+/** Explicit layout → class map: layout names are data, not CSS class names. */
+const LAYOUT_CLASS: Record<PanelDefinition["layout"], string | undefined> = {
+  primary: styles.layoutPrimary,
+  secondary: styles.layoutSecondary,
+  sidebar: styles.layoutSidebar,
+  half: styles.layoutHalf,
+  wide: styles.layoutWide,
+};
 
 /** The latest value of the first series inside the visible range, as a readout. */
 function latestReadout(spec: ChartSpec | null): ReactNode {
@@ -214,18 +223,27 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
 
         <ChartSyncProvider>
           <div className={styles.panels}>
-            {panels.map((panel) => (
-              <DashboardPanel
-                key={panel.id}
-                panel={panel}
-                ctx={ctx}
-                status={tooLarge ? "success" : mainStatus}
-                emptyMessage={tooLarge ? "Choose a shorter range to load this panel." : undefined}
-                error={main.error}
-                onRetry={() => void main.refetch()}
-                isRefreshing={isRefreshing}
-              />
-            ))}
+            {panels.map((panel) =>
+              panel.kind === "custom" ? (
+                <panel.Component
+                  key={panel.id}
+                  ctx={ctx}
+                  onShowSeries={(id) => actions.selectSeries([id])}
+                  className={LAYOUT_CLASS[panel.layout]}
+                />
+              ) : (
+                <DashboardPanel
+                  key={panel.id}
+                  panel={panel}
+                  ctx={ctx}
+                  status={tooLarge ? "success" : mainStatus}
+                  emptyMessage={tooLarge ? "Choose a shorter range to load this panel." : undefined}
+                  error={main.error}
+                  onRetry={() => void main.refetch()}
+                  isRefreshing={isRefreshing}
+                />
+              ),
+            )}
           </div>
         </ChartSyncProvider>
       </div>
@@ -242,7 +260,7 @@ function DashboardPanel({
   isRefreshing,
   emptyMessage,
 }: {
-  panel: PanelDefinition;
+  panel: ChartPanelDefinition;
   ctx: PanelContext | null;
   status: "pending" | "error" | "success";
   error: unknown;
@@ -266,7 +284,7 @@ function DashboardPanel({
       table={table}
       bodyHeight={panel.bodyHeight}
       variant={panel.layout === "primary" ? "primary" : "secondary"}
-      className={styles[panel.layout]}
+      className={LAYOUT_CLASS[panel.layout]}
     >
       {spec && <TimeChart spec={spec} isRefreshing={isRefreshing} />}
     </Panel>

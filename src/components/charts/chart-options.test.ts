@@ -121,6 +121,17 @@ describe("buildChartOptions", () => {
     expect((get(options, "chart", "spacing") as number[])[1]).toBeGreaterThanOrEqual(24);
   });
 
+  it("draws labelled threshold lines alongside the zero line", () => {
+    const options = buildChartOptions(
+      spec({ zeroLine: true, thresholds: [{ value: 1, label: "High (≥ 1)" }] }),
+      TOKENS,
+    );
+    expect(get(options, "yAxis", "plotLines")).toHaveLength(2);
+    expect(get(options, "yAxis", "plotLines", 1)).toMatchObject({ value: 1, label: { text: "High (≥ 1)" } });
+    // The axis always reaches the thresholds, even if the data doesn't.
+    expect(get(options, "yAxis")).toMatchObject({ softMin: 1, softMax: 1 });
+  });
+
   it("adds a zero baseline for signed data", () => {
     const options = buildChartOptions(spec({ zeroLine: true }), TOKENS);
     expect(get(options, "yAxis", "plotLines", 0)).toMatchObject({ value: 0, width: 1 });

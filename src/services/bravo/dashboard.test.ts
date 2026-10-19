@@ -27,7 +27,7 @@ const ctx = (series: SeriesMeta[], overrides: Partial<PanelContext> = {}): Panel
 
 const panel = (title: string) => {
   const p = bravoDashboard.panels.find((x) => x.title === title);
-  if (!p) throw new Error(`no panel ${title}`);
+  if (!p || p.kind === "custom") throw new Error(`no chart panel ${title}`);
   return p;
 };
 

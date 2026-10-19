@@ -70,6 +70,8 @@ export interface ChartSpec {
   readonly yTickPositions?: readonly number[];
   /** Draw an emphasised baseline at zero (signed data). */
   readonly zeroLine?: boolean;
+  /** Labelled reference levels, e.g. signal thresholds. */
+  readonly thresholds?: readonly { readonly value: number; readonly label: string }[];
   /** Visible x-range in epoch ms; the full data stays loaded so zooming needs no refetch. */
   readonly range?: { readonly min: number; readonly max: number };
   readonly decimals?: number;
@@ -228,6 +230,9 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
       reversed: spec.invertY,
       min: spec.yMin,
       max: spec.yMax,
+      // Keep threshold lines in view even when the data never reaches them.
+      softMin: spec.thresholds?.length ? Math.min(...spec.thresholds.map((t) => t.value)) : undefined,
+      softMax: spec.thresholds?.length ? Math.max(...spec.thresholds.map((t) => t.value)) : undefined,
       tickPositions: spec.yTickPositions ? [...spec.yTickPositions] : undefined,
       gridLineColor: tokens.grid,
       gridLineWidth: 1,
@@ -243,7 +248,23 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
           return formatAxisNumber(Number(this.value));
         },
       },
-      plotLines: spec.zeroLine ? [{ value: 0, color: tokens.rule, width: 1, zIndex: 3 }] : undefined,
+      plotLines: [
+        ...(spec.zeroLine ? [{ value: 0, color: tokens.rule, width: 1, zIndex: 3 }] : []),
+        // Solid and labelled, so they read as reference levels rather than gridlines.
+        ...(spec.thresholds ?? []).map((t) => ({
+          value: t.value,
+          color: tokens.graphite,
+          width: 1,
+          zIndex: 3,
+          label: {
+            text: escapeHtml(t.label),
+            align: "right" as const,
+            x: -4,
+            y: -4,
+            style: { color: tokens.graphite, fontSize: "11px", fontFamily: tokens.fontFamily },
+          },
+        })),
+      ],
     },
     tooltip: {
       shared: true,
