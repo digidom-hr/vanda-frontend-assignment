@@ -5,10 +5,12 @@ import { NuqsTestingAdapter, type UrlUpdateEvent } from "nuqs/adapters/testing";
 import { describe, expect, it, vi } from "vitest";
 import type { SeriesMeta } from "@/services/types";
 import { stubApi } from "@/test/render";
+import { DASHBOARDS } from "./configs";
 import { ServiceDashboard } from "./ServiceDashboard";
 
 // The chart itself is tested elsewhere; here it only shows what it was given.
 vi.mock("@/components/charts/TimeChart", () => ({
+  preloadTimeChart: vi.fn(),
   TimeChart: ({ spec }: { spec: { unit: string; series: { name: string }[] } }) => (
     <div data-testid="chart">
       {spec.series.map((s) => s.name).join(", ")} ({spec.unit})
@@ -52,6 +54,10 @@ function api({ failCatalog = false } = {}) {
 }
 
 function setup(search = "", options?: { failCatalog?: boolean }) {
+  return setupWithClient(search, options);
+}
+
+function setupWithClient(search = "", options?: { failCatalog?: boolean }) {
   const fetchMock = api(options);
   const onUrlUpdate = vi.fn<(e: UrlUpdateEvent) => void>();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -62,7 +68,7 @@ function setup(search = "", options?: { failCatalog?: boolean }) {
       </NuqsTestingAdapter>
     </QueryClientProvider>,
   );
-  return { fetchMock, onUrlUpdate, user: userEvent.setup() };
+  return { fetchMock, onUrlUpdate, client, user: userEvent.setup() };
 }
 
 describe("ServiceDashboard", () => {
@@ -117,5 +123,17 @@ describe("ServiceDashboard", () => {
     const calls = fetchMock.mock.calls.length;
     await user.click(screen.getByRole("button", { name: "Try again" }));
     await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(calls));
+  });
+
+  it("does not rebuild charts when a refetch returns the same data", async () => {
+    const build = vi.spyOn(DASHBOARDS.alpha.panels[0] as { build: (...args: never[]) => unknown }, "build");
+    const { client } = setup();
+    await screen.findByTestId("chart");
+    await waitFor(() => expect(screen.getByText("101.00 USD")).toBeInTheDocument());
+    const before = build.mock.calls.length;
+
+    await client.refetchQueries();
+    await waitFor(() => expect(client.isFetching()).toBe(0));
+    expect(build.mock.calls.length).toBe(before);
   });
 });

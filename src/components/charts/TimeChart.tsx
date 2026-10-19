@@ -10,8 +10,19 @@ export interface TimeChartProps {
   readonly isRefreshing?: boolean;
 }
 
+const loadTimeChart = () => import("./TimeChart.client");
+
+/**
+ * Starts downloading the chart code early (it is cached after the first
+ * call). Called when a dashboard mounts, so the chunk loads in parallel with
+ * the data instead of after it, and on intent (hovering a service link).
+ */
+export function preloadTimeChart(): void {
+  void loadTimeChart();
+}
+
 // Highcharts is large and browser-only: load it in its own chunk, after the page is interactive.
-const TimeChartClient = dynamic(() => import("./TimeChart.client"), {
+const TimeChartClient = dynamic(loadTimeChart, {
   ssr: false,
   loading: () => <div className={styles.placeholder} aria-hidden="true" />,
 });
