@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, type ReactNode } from "react";
 import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from "react-aria-components";
+import { ChartSyncProvider } from "@/components/charts/ChartSync";
 import { chartTable } from "@/components/charts/chart-table";
 import type { ChartSpec } from "@/components/charts/chart-options";
 import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
@@ -192,19 +193,21 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           />
         )}
 
-        <div className={styles.panels}>
-          {config.panels.map((panel) => (
-            <DashboardPanel
-              key={panel.id}
-              panel={panel}
-              ctx={ctx}
-              status={mainStatus}
-              error={main.error}
-              onRetry={() => void main.refetch()}
-              isRefreshing={isRefreshing}
-            />
-          ))}
-        </div>
+        <ChartSyncProvider>
+          <div className={styles.panels}>
+            {config.panels.map((panel) => (
+              <DashboardPanel
+                key={panel.id}
+                panel={panel}
+                ctx={ctx}
+                status={mainStatus}
+                error={main.error}
+                onRetry={() => void main.refetch()}
+                isRefreshing={isRefreshing}
+              />
+            ))}
+          </div>
+        </ChartSyncProvider>
       </div>
     </div>
   );
