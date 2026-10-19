@@ -1,0 +1,8 @@
+{
+  "name": "frontend-assignment",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "api": "node mock-api/server.mjs"
+  }
+}
