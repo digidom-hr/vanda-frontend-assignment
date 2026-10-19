@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { levelChart, seriesSlot } from "./presets";
+import { flowChart, levelChart, rankChart, seriesSlot, signedLineChart } from "./presets";
 
 const s = (id: string) => ({ id, name: id, t: [1, 2], values: [1, 2] });
 
@@ -36,5 +36,35 @@ describe("levelChart", () => {
   it("passes chart options through", () => {
     const spec = levelChart({ title: "Price", unit: "USD", height: 300, intraday: true, series: [s("a")] });
     expect(spec).toMatchObject({ title: "Price", unit: "USD", height: 300, intraday: true });
+  });
+});
+
+describe("flowChart", () => {
+  it("draws signed columns around a zero line", () => {
+    const spec = flowChart({ title: "Net", unit: "USD", height: 200, series: s("n") });
+    expect(spec.zeroLine).toBe(true);
+    expect(spec.series[0]).toMatchObject({ kind: "column", color: "positive", signed: true });
+  });
+});
+
+describe("signedLineChart", () => {
+  it("draws a line, not an area, with a zero line", () => {
+    const spec = signedLineChart({ title: "Score", unit: "score", height: 200, series: s("x") });
+    expect([spec.zeroLine, spec.series[0]?.kind]).toEqual([true, "line"]);
+  });
+});
+
+describe("rankChart", () => {
+  it("inverts the axis from 1 to the field size, with whole-number values", () => {
+    const spec = rankChart({ title: "Rank", unit: "rank", height: 200, series: s("r"), of: 40 });
+    expect(spec).toMatchObject({ invertY: true, yMin: 1, yMax: 40, yTickPositions: [1, 10, 20, 30, 40], decimals: 0 });
+  });
+
+  it("draws the raw rank quietly and the trend in the series colour", () => {
+    const spec = rankChart({ title: "Rank", unit: "rank", height: 200, series: s("r"), trend: s("t"), of: 40 });
+    expect(spec.series.map((x) => [x.id, x.color])).toEqual([
+      ["r", "neutral"],
+      ["t", "series-1"],
+    ]);
   });
 });

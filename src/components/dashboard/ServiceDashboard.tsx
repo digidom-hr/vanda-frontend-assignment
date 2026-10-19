@@ -141,6 +141,8 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
     : null;
 
   const mainStatus = main.isError && !main.data ? "error" : main.data ? "success" : "pending";
+  // A range too large to load is one page-level problem with one fix, not an error in every panel.
+  const tooLarge = main.error instanceof ApiError && main.error.code === "too_large" && !main.data;
   const isRefreshing = main.isPlaceholderData || (main.isFetching && main.data !== undefined);
 
   return (
@@ -193,6 +195,18 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           />
         )}
 
+        {tooLarge && (
+          <div className={styles.notice} role="alert">
+            <p>
+              This range has too much {frequency === "5min" ? "5-minute " : ""}data to load at once. Choose a shorter
+              range.
+            </p>
+            <button type="button" className={styles.noticeAction} onClick={() => actions.setPreset("1Y")}>
+              Show the last year
+            </button>
+          </div>
+        )}
+
         <ChartSyncProvider>
           <div className={styles.panels}>
             {config.panels.map((panel) => (
@@ -200,7 +214,8 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
                 key={panel.id}
                 panel={panel}
                 ctx={ctx}
-                status={mainStatus}
+                status={tooLarge ? "success" : mainStatus}
+                emptyMessage={tooLarge ? "Choose a shorter range to load this panel." : undefined}
                 error={main.error}
                 onRetry={() => void main.refetch()}
                 isRefreshing={isRefreshing}
@@ -220,6 +235,7 @@ function DashboardPanel({
   error,
   onRetry,
   isRefreshing,
+  emptyMessage,
 }: {
   panel: PanelDefinition;
   ctx: PanelContext | null;
@@ -227,6 +243,7 @@ function DashboardPanel({
   error: unknown;
   onRetry: () => void;
   isRefreshing: boolean;
+  emptyMessage?: string;
 }) {
   const spec = useMemo(() => (ctx && status === "success" ? panel.build(ctx) : null), [ctx, panel, status]);
   const table = useMemo(() => (spec ? chartTable(spec) : undefined), [spec]);
@@ -239,6 +256,7 @@ function DashboardPanel({
       error={error}
       onRetry={onRetry}
       isEmpty={status === "success" && spec === null}
+      emptyMessage={emptyMessage}
       isRefreshing={isRefreshing}
       table={table}
       bodyHeight={panel.bodyHeight}

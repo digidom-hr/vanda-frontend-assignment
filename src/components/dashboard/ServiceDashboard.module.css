@@ -63,10 +63,26 @@
 }
 
 .notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
   padding: var(--space-2) var(--space-3);
   border-left: 3px solid var(--color-highlighter);
   background: var(--color-surface);
   font-size: var(--text-sm);
+}
+
+.noticeAction {
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--color-ink);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
 }
 
 .controls {
@@ -94,6 +110,10 @@
 
 .secondary {
   grid-column: span 4;
+}
+
+.half {
+  grid-column: span 6;
 }
 
 .wide {
@@ -209,7 +229,8 @@
 }
 
 @media (max-width: 40rem) {
-  .secondary {
+  .secondary,
+  .half {
     grid-column: span 12;
   }
 }

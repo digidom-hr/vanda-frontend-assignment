@@ -24,6 +24,7 @@ describe("number and date formatting", () => {
 
   it("formats values with their unit", () => {
     expect(formatValue(182.4, "USD")).toBe("182.40 USD");
+    expect(formatValue(770_387, "USD")).toBe("770,387 USD");
     expect(formatValue(-1_234_000_000, "USD")).toBe("−1.2B USD");
     expect(formatValue(4.567, "%")).toBe("4.57%");
     expect(formatValue(-1.5, "σ")).toBe("−1.50σ");

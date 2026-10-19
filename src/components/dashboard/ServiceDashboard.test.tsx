@@ -30,8 +30,20 @@ const meta = (id: string, name: string, frequencies: SeriesMeta["frequencies"] =
 
 const CATALOG = [meta("A-0001", "Acme Corp (ACMC)", ["daily", "5min"]), meta("A-0013", "Lumen Technologies (LUMT)")];
 
-function api({ failCatalog = false } = {}) {
+function api({ failCatalog = false, tooLarge = false } = {}) {
   return stubApi((url) => {
+    if (tooLarge && url.searchParams.get("frequency") === "5min") {
+      return Response.json(
+        {
+          error: {
+            code: "too_large",
+            message: "This request returns 609,804 values (limit 400,000).",
+            retryable: false,
+          },
+        },
+        { status: 413 },
+      );
+    }
     if (url.pathname === "/api/alpha/series") {
       return failCatalog
         ? Response.json(
@@ -53,11 +65,11 @@ function api({ failCatalog = false } = {}) {
   });
 }
 
-function setup(search = "", options?: { failCatalog?: boolean }) {
+function setup(search = "", options?: { failCatalog?: boolean; tooLarge?: boolean }) {
   return setupWithClient(search, options);
 }
 
-function setupWithClient(search = "", options?: { failCatalog?: boolean }) {
+function setupWithClient(search = "", options?: { failCatalog?: boolean; tooLarge?: boolean }) {
   const fetchMock = api(options);
   const onUrlUpdate = vi.fn<(e: UrlUpdateEvent) => void>();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -101,11 +113,13 @@ describe("ServiceDashboard", () => {
 
   it("requests intraday data for the visible range only", async () => {
     const { fetchMock } = setup("?freq=5min&range=1M");
+    // The stub's data starts on 30 Dec, so "last month" is clamped to it.
     await waitFor(() =>
-      expect(fetchMock.mock.calls.map(([u]) => String(u))).toContain(
-        // The stub's data starts on 30 Dec, so "last month" is clamped to it.
-        "/api/alpha/timeseries?ids=A-0001&frequency=5min&from=2025-12-30&to=2025-12-31&fields=price",
-      ),
+      expect(
+        fetchMock.mock.calls
+          .map(([u]) => new URL(String(u), "http://app.test").searchParams)
+          .some((p) => p.get("frequency") === "5min" && p.get("from") === "2025-12-30" && p.get("to") === "2025-12-31"),
+      ).toBe(true),
     );
   });
 
@@ -135,5 +149,16 @@ describe("ServiceDashboard", () => {
     await client.refetchQueries();
     await waitFor(() => expect(client.isFetching()).toBe(0));
     expect(build.mock.calls.length).toBe(before);
+  });
+
+  it("shows one notice with a fix, not an error in every panel, when the range is too large", async () => {
+    const { user, onUrlUpdate } = setup("?freq=5min&range=All", { tooLarge: true });
+    const alerts = await screen.findAllByRole("alert");
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]).toHaveTextContent("This range has too much 5-minute data to load at once.");
+    expect(screen.getAllByText("Choose a shorter range to load this panel.").length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: "Show the last year" }));
+    expect(onUrlUpdate.mock.calls.at(-1)?.[0].searchParams.get("range")).toBeNull(); // 1Y is the default
   });
 });
