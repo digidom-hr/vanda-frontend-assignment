@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo } from "next/font/google";
 import type { ReactNode } from "react";
+import { AriaRouterProvider } from "@/components/providers/AriaRouterProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { AppShell } from "@/components/shell/AppShell";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       </head>
       <body>
         <QueryProvider>
-          <AppShell>{children}</AppShell>
+          <AriaRouterProvider>
+            <AppShell>{children}</AppShell>
+          </AriaRouterProvider>
         </QueryProvider>
       </body>
     </html>

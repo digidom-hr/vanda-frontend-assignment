@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { SearchDialog } from "@/components/search/SearchDialog";
 import styles from "./AppShell.module.css";
 import { ServiceNav } from "./ServiceNav";
 import { ThemeToggle } from "./ThemeToggle";
@@ -15,6 +16,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href="/" className={styles.wordmark}>
             Timeseries
           </Link>
+          <div className={styles.search}>
+            <SearchDialog />
+          </div>
           <ServiceNav />
           <div className={styles.tools}>
             <ThemeToggle />

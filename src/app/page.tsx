@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SearchPanel } from "@/components/search/SearchPanel";
 import { SERVICES } from "@/services/registry";
 import type { Frequency } from "@/services/types";
 import styles from "./page.module.css";
@@ -15,8 +16,12 @@ export default function HomePage() {
     <div className={styles.home}>
       <header className={styles.intro}>
         <h1 className={styles.title}>Timeseries</h1>
-        <p className={styles.lede}>Chart and transform series from every data service. Open a service to begin.</p>
+        <p className={styles.lede}>Find a series in any data service, then chart and transform it.</p>
       </header>
+
+      <section aria-label="Search series">
+        <SearchPanel variant="inline" />
+      </section>
 
       <section aria-labelledby="services-heading">
         <h2 id="services-heading" className={styles.sectionTitle}>
