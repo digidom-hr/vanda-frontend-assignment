@@ -18,6 +18,7 @@ import {
   resolveSelection,
 } from "@/lib/dashboard";
 import { formatFacetValue, formatTimestamp, formatValue } from "@/lib/format";
+import { toIsoDate } from "@/lib/time";
 import { MAX_SELECTED_SERIES, resolveRange } from "@/lib/url-state";
 import { getService, type ServiceId } from "@/services/registry";
 import type { SeriesColumns } from "@/services/types";
@@ -25,6 +26,7 @@ import { DASHBOARDS } from "./configs";
 import type { PanelContext, PanelDefinition } from "./panels";
 import styles from "./ServiceDashboard.module.css";
 import { SeriesPicker, type SeriesPickerProps } from "./SeriesPicker";
+import { TimeRail } from "./TimeRail";
 import { FrequencyControl, RangeControl } from "./ViewControls";
 
 /** The latest value of the first series inside the visible range, as a readout. */
@@ -71,6 +73,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
       : null,
   );
   const extent = useMemo(() => extentOf(overview.data?.series ?? []), [overview.data]);
+  const overviewSeries = overview.data?.series[0];
 
   const fields = useMemo(() => [...new Set(config.panels.flatMap((p) => p.fields))], [config.panels]);
   const fetchRange = fetchWindow(frequency, rangeSelection, extent);
@@ -178,6 +181,16 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           />
           <RangeControl preset={state.preset} from={state.from} to={state.to} onPreset={actions.setPreset} />
         </div>
+
+        {overviewSeries && range && (
+          <TimeRail
+            label={`Time range for ${primary?.name ?? service.label}`}
+            t={overviewSeries.t}
+            values={overviewSeries.fields[config.overviewField] ?? []}
+            range={range}
+            onCommit={({ min, max }) => actions.setCustomRange(toIsoDate(min), toIsoDate(max))}
+          />
+        )}
 
         <div className={styles.panels}>
           {config.panels.map((panel) => (
