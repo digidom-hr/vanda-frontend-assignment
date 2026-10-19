@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getService } from "@/services/registry";
 import type { SeriesColumns, SeriesMeta } from "@/services/types";
-import { primaryPanel, type PanelContext } from "./panels";
+import { fieldPanel, primaryPanel, type PanelContext } from "./panels";
 
 const meta = (id: string): SeriesMeta => ({
   service: "alpha",
@@ -74,5 +74,25 @@ describe("primaryPanel", () => {
   it("returns nothing when there is no data", () => {
     expect(price.build(ctx({ columns: new Map() }))).toBeNull();
     expect(price.build(ctx({ series: [] }))).toBeNull();
+  });
+});
+
+describe("fieldPanel", () => {
+  const net = fieldPanel({
+    field: "price",
+    title: "Net",
+    subtitle: "Buy minus sell",
+    chart: (base, series) => ({ ...base, series: [{ ...series, kind: "column", color: "positive" }] }),
+  });
+
+  it("draws one field of the primary series with the shared chart settings", () => {
+    const spec = net.build(ctx({ series: [meta("A"), meta("B")] }));
+    expect(spec).toMatchObject({ title: "Net", unit: "USD", height: 180, intraday: false, range: { min: 2, max: 4 } });
+    expect(spec?.series.map((s) => [s.id, s.values])).toEqual([["A:price", [10, 20, 30, 40]]]);
+    expect(net.subtitle?.(ctx())).toBe("Buy minus sell");
+  });
+
+  it("returns nothing without data for the primary series", () => {
+    expect(net.build(ctx({ columns: new Map() }))).toBeNull();
   });
 });

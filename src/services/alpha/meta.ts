@@ -15,7 +15,7 @@ export const alphaMeta = {
     { key: "total_value", label: "Total value", unit: "USD", description: "Buy value plus sell value." },
     { key: "group_net_value", label: "Sector net value", unit: "USD", description: "Net value of the whole sector." },
     { key: "score", label: "Score", unit: "score" },
-    { key: "momentum", label: "Momentum", unit: "index" },
-    { key: "rank", label: "Rank", unit: "rank", inverted: true, description: "1 is strongest." },
+    { key: "momentum", label: "Momentum", unit: "" },
+    { key: "rank", label: "Rank", unit: "", inverted: true, description: "1 is strongest." },
   ],
 } as const satisfies ServiceMeta<"alpha">;

@@ -4,7 +4,7 @@
  * means adding a definition, not a page.
  */
 import type { ChartSpec } from "@/components/charts/chart-options";
-import { levelChart } from "@/components/charts/presets";
+import { levelChart, type PresetSeries } from "@/components/charts/presets";
 import { rebaseTo100 } from "@/lib/compare";
 import { applyTransforms, transformLabel, transformedUnit, type TransformSpec } from "@/lib/transforms/pipeline";
 import { getField } from "@/services/registry";
@@ -25,8 +25,8 @@ export interface PanelDefinition {
   readonly title: string;
   /** Fields this panel needs; the page requests the union for all panels. */
   readonly fields: readonly string[];
-  /** primary: the large chart that receives transforms and comparisons. */
-  readonly layout: "primary" | "secondary" | "wide";
+  /** primary: the large chart that receives transforms and comparisons; half: half the row; wide: full row. */
+  readonly layout: "primary" | "secondary" | "half" | "wide";
   readonly bodyHeight: number;
   readonly subtitle?: (ctx: PanelContext) => string;
   /** The chart for the current context, or null when this panel has nothing to show. */
@@ -74,7 +74,7 @@ export function primaryPanel(options: {
     title: options.title,
     fields: [options.field],
     layout: "primary",
-    bodyHeight: options.bodyHeight ?? 340,
+    bodyHeight: options.bodyHeight ?? 440,
     subtitle: (ctx) => {
       const parts = [FREQUENCY_TEXT[ctx.frequency]];
       if (ctx.transforms.length) parts.push(ctx.transforms.map(transformLabel).join(" then "));
@@ -98,12 +98,63 @@ export function primaryPanel(options: {
         title: options.title,
         description: `${options.title} of ${ctx.series.map((s) => s.name).join(", ")}.`,
         unit,
-        height: options.bodyHeight ?? 340,
+        height: options.bodyHeight ?? 440,
         intraday: ctx.frequency === "5min",
         range: ctx.range,
         fill: options.fill && ctx.transforms.length === 0,
         series,
       });
+    },
+  };
+}
+
+/** Settings every chart in a panel shares, derived from the page context. */
+export interface ChartBase {
+  readonly title: string;
+  readonly description: string;
+  readonly unit: string;
+  readonly height: number;
+  readonly intraday: boolean;
+  readonly range: { readonly min: number; readonly max: number };
+}
+
+/**
+ * A panel showing one field of the primary series, drawn with a chart preset.
+ * Comparisons and transforms belong to the primary panel; these panels add
+ * context about the series in focus.
+ */
+export function fieldPanel(options: {
+  readonly field: string;
+  readonly title: string;
+  readonly subtitle?: string;
+  readonly layout?: PanelDefinition["layout"];
+  readonly bodyHeight?: number;
+  readonly chart: (base: ChartBase, series: PresetSeries) => ChartSpec;
+}): PanelDefinition {
+  const bodyHeight = options.bodyHeight ?? 180;
+  return {
+    id: `field-${options.field}`,
+    title: options.title,
+    fields: [options.field],
+    layout: options.layout ?? "secondary",
+    bodyHeight,
+    subtitle: options.subtitle ? () => options.subtitle as string : undefined,
+    build: (ctx) => {
+      const primary = ctx.series[0];
+      const columns = primary ? ctx.columns.get(primary.id) : undefined;
+      const values = columns?.fields[options.field];
+      if (!primary || !columns || !values || columns.t.length === 0) return null;
+      return options.chart(
+        {
+          title: options.title,
+          description: `${options.title} of ${primary.name}.`,
+          unit: fieldUnit(ctx.service, primary, options.field),
+          height: bodyHeight,
+          intraday: ctx.frequency === "5min",
+          range: ctx.range,
+        },
+        { id: `${primary.id}:${options.field}`, name: primary.name, t: columns.t, values },
+      );
     },
   };
 }

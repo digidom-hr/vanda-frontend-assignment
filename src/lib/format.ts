@@ -33,8 +33,11 @@ const TIGHT_UNITS = new Set(["%", "σ"]);
  */
 export function formatValue(value: number | null | undefined, unit: string, decimals = 2): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return "No data";
+  const magnitude = Math.abs(value);
   const number =
-    Math.abs(value) >= 1_000_000 ? compactFormat.format(value).replace("-", "−") : formatNumber(value, decimals);
+    magnitude >= 1_000_000
+      ? compactFormat.format(value).replace("-", "−")
+      : formatNumber(value, magnitude >= 1000 ? 0 : decimals); // no false precision on large figures
   if (!unit) return number;
   return TIGHT_UNITS.has(unit) ? `${number}${unit}` : `${number} ${unit}`;
 }

@@ -1,3 +1,4 @@
+import { alphaDashboard } from "@/services/alpha/dashboard";
 import type { ServiceId } from "@/services/registry";
 import { primaryPanel, type DashboardConfig } from "./panels";
 
@@ -6,11 +7,7 @@ import { primaryPanel, type DashboardConfig } from "./panels";
  * new service without a dashboard config is a compile error.
  */
 export const DASHBOARDS: Readonly<Record<ServiceId, DashboardConfig>> = {
-  alpha: {
-    groupBy: "group",
-    overviewField: "price",
-    panels: [primaryPanel({ field: "price", title: "Price", rebase: true, fill: true })],
-  },
+  alpha: alphaDashboard,
   bravo: {
     groupBy: "region",
     overviewField: "net",

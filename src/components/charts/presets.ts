@@ -37,3 +37,43 @@ export function levelChart(
   }));
   return { ...rest, series };
 }
+
+/** Per-period amounts with a sign (net flows): columns around zero, blue up, red down. */
+export function flowChart(options: Common & { readonly series: PresetSeries }): ChartSpec {
+  const { series, ...rest } = options;
+  return {
+    ...rest,
+    zeroLine: true,
+    series: [{ ...series, kind: "column", color: "positive", signed: true }],
+  };
+}
+
+/** A value that moves around zero (scores, momentum): a line with a zero baseline, never an area. */
+export function signedLineChart(options: Common & { readonly series: PresetSeries }): ChartSpec {
+  const { series, ...rest } = options;
+  return { ...rest, zeroLine: true, series: [{ ...series, kind: "line", color: "series-1" }] };
+}
+
+/**
+ * A rank where 1 is best: inverted axis from 1 to `of`, the raw rank as a thin
+ * line, and an optional smoothed overlay that shows the trend through the
+ * day-to-day noise.
+ */
+export function rankChart(
+  options: Common & { readonly series: PresetSeries; readonly of: number; readonly trend?: PresetSeries },
+): ChartSpec {
+  const { series, of, trend, ...rest } = options;
+  const quarter = Math.max(1, Math.round(of / 4));
+  return {
+    ...rest,
+    invertY: true,
+    yMin: 1,
+    yMax: of,
+    yTickPositions: [1, ...[1, 2, 3].map((k) => k * quarter), of].filter((v, i, a) => a.indexOf(v) === i),
+    decimals: 0,
+    series: [
+      { ...series, kind: "line", color: "neutral" },
+      ...(trend ? [{ ...trend, kind: "line" as const, color: "series-1" as const }] : []),
+    ],
+  };
+}
