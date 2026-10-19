@@ -1,10 +1,11 @@
 "use client";
 
-import { StockChart } from "@highcharts/react/Stock";
+import { StockChart, type HighchartsReactRefObject } from "@highcharts/react/Stock";
 // Side-effect import: registers keyboard navigation and screen-reader support.
 import "highcharts/es-modules/masters/modules/accessibility.src.js";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { buildChartOptions } from "./chart-options";
+import { useChartSync } from "./ChartSync";
 import { useChartTokens, useReducedMotion } from "./chart-tokens";
 import type { TimeChartProps } from "./TimeChart";
 import styles from "./TimeChart.module.css";
@@ -13,6 +14,23 @@ import styles from "./TimeChart.module.css";
 export default function TimeChartClient({ spec }: TimeChartProps) {
   const tokens = useChartTokens();
   const reducedMotion = useReducedMotion();
-  const options = useMemo(() => buildChartOptions(spec, tokens, { reducedMotion }), [spec, tokens, reducedMotion]);
-  return <StockChart options={options} containerProps={{ className: styles.container }} />;
+  const ref = useRef<HighchartsReactRefObject>(null);
+  const sync = useChartSync();
+
+  // Join the page's chart group, so hovering here marks the same date in the other panels.
+  useEffect(() => {
+    const chart = ref.current?.chart;
+    return sync && chart ? sync.register(chart) : undefined;
+  }, [sync]);
+
+  // Highcharts passes the chart the pointer is in, so no ref is read here.
+  const options = useMemo(
+    () =>
+      buildChartOptions(spec, tokens, {
+        reducedMotion,
+        onHover: sync ? (x, chart) => sync.hover(chart, x) : undefined,
+      }),
+    [spec, tokens, reducedMotion, sync],
+  );
+  return <StockChart ref={ref} options={options} containerProps={{ className: styles.container }} />;
 }
