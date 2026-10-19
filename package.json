@@ -22,6 +22,8 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm test"
   },
   "dependencies": {
+    "@tanstack/react-query": "5.104.4",
+    "@tanstack/react-query-devtools": "5.104.4",
     "next": "16.4.2",
     "react": "19.3.1",
     "react-aria-components": "1.22.1",
