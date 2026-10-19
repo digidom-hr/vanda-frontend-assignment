@@ -1,0 +1,89 @@
+.skip {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: var(--z-overlay);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip:focus-visible {
+  transform: none;
+}
+
+.header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: var(--z-header);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* Paint the safe-area band above the sticky header on phones with a notch. */
+.header::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--color-surface);
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "wordmark nav tools";
+  align-items: center;
+  gap: var(--space-6);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-block: var(--space-2);
+  padding-left: var(--gutter);
+  padding-right: max(var(--space-4), env(safe-area-inset-right, 0px));
+}
+
+.wordmark {
+  grid-area: wordmark;
+  font-size: var(--text-md);
+  font-stretch: var(--font-width-expanded);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+  text-decoration: none;
+  border-radius: var(--radius-control);
+}
+
+.tools {
+  grid-area: tools;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.main {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-block: var(--space-6) var(--space-12);
+  padding-left: var(--gutter);
+  padding-right: max(var(--space-4), env(safe-area-inset-right, 0px));
+}
+
+.main:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Phones: wordmark and tools on the first row, services scroll on the second. */
+@media (max-width: 40rem) {
+  .bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "wordmark tools"
+      "nav nav";
+    gap: var(--space-1) var(--space-3);
+    padding-bottom: 0;
+  }
+}
