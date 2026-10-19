@@ -1,7 +1,42 @@
+import Link from "next/link";
+import { SERVICES } from "@/services/registry";
+import type { Frequency } from "@/services/types";
+import styles from "./page.module.css";
+
+const FREQUENCY_LABEL: Record<Frequency, string> = {
+  "5min": "5 min",
+  daily: "Daily",
+  weekly: "Weekly",
+  monthly: "Monthly",
+};
+
 export default function HomePage() {
   return (
-    <main>
-      <h1>Timeseries Dashboard</h1>
-    </main>
+    <div className={styles.home}>
+      <header className={styles.intro}>
+        <h1 className={styles.title}>Timeseries</h1>
+        <p className={styles.lede}>Chart and transform series from every data service. Open a service to begin.</p>
+      </header>
+
+      <section aria-labelledby="services-heading">
+        <h2 id="services-heading" className={styles.sectionTitle}>
+          Data services
+        </h2>
+        <ul role="list" className={styles.services}>
+          {SERVICES.map((service) => (
+            <li key={service.id} className={styles.service}>
+              <Link href={`/${service.id}`} className={styles.serviceLink}>
+                {service.label}
+              </Link>
+              <p className={styles.description}>{service.description}</p>
+              <p className={styles.frequencies}>
+                <span className="visually-hidden">Frequencies: </span>
+                {service.frequencies.map((f) => FREQUENCY_LABEL[f]).join(", ")}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
   );
 }

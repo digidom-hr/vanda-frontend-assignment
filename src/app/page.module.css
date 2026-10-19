@@ -1,0 +1,92 @@
+.home {
+  display: grid;
+  gap: var(--space-10);
+  max-width: 56rem;
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-6);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-stretch: var(--font-width-expanded);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--tracking-title);
+}
+
+.lede {
+  max-width: 60ch;
+  color: var(--color-graphite);
+  font-size: var(--text-md);
+}
+
+.sectionTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* A ruled list: one row per service, not a grid of cards. */
+.service {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-6);
+  align-items: baseline;
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--color-rule);
+  position: relative;
+}
+
+.serviceLink {
+  font-size: var(--text-lg);
+  font-stretch: var(--font-width-expanded);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--tracking-title);
+  text-decoration: none;
+  border-radius: var(--radius-control);
+}
+
+/* The whole row is the click target; the link stays the accessible name. */
+.serviceLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.service:hover {
+  background: var(--color-surface-hover);
+}
+
+.service:hover .serviceLink {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.serviceLink:focus-visible {
+  box-shadow: none;
+}
+
+.service:has(.serviceLink:focus-visible) {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-control);
+}
+
+.description {
+  color: var(--color-ink);
+}
+
+.frequencies {
+  color: var(--color-graphite);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem) {
+  .service {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

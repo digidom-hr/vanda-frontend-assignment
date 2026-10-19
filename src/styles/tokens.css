@@ -1,0 +1,121 @@
+/*
+ * Design tokens: the single source of truth for the app's look.
+ *
+ * Every colour, font setting, size, space, radius and duration used anywhere
+ * in the app comes from here. Components (CSS Modules) and the chart theme only
+ * reference these custom properties, so changing the look means changing this
+ * file.
+ *
+ * Direction: "graph paper and highlighter". Ink on a faint green-grey paper
+ * for all chrome; the highlighter yellow is the only accent and is used as a
+ * fill (selected time range, search matches, focus halo), never as text.
+ * Data colours are defined separately for charts.
+ *
+ * Theming: each colour is declared once with its light and dark value via
+ * light-dark(). The active scheme follows the OS unless the user picks one,
+ * which sets data-theme="light" | "dark" on <html> (see src/lib/theme.ts).
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Colour: surfaces */
+  --color-paper: light-dark(#eff3f0, #1a201e); /* app background */
+  --color-surface: light-dark(#ffffff, #222927); /* panels, inputs, header */
+  --color-surface-hover: light-dark(#f4f7f5, #29312e); /* hovered rows and options */
+
+  /* Colour: text and lines */
+  --color-ink: light-dark(#1b2331, #e4eae6); /* primary text, focus ring, selected state */
+  --color-on-ink: light-dark(#eff3f0, #1a201e); /* text on ink-filled controls */
+  --color-graphite: light-dark(#5b6472, #9aa6a0); /* secondary text, axis labels */
+  --color-rule: light-dark(#d3dcd6, #36403c); /* borders */
+  --color-grid: light-dark(#e3e9e5, #2c3431); /* chart gridlines */
+
+  /* Colour: the one accent */
+  --color-highlighter: light-dark(#f2d13a, #e8c531);
+  --color-on-highlighter: #1b2331; /* text on the highlighter, in both themes */
+  --color-highlighter-wash: light-dark(rgb(242 209 58 / 0.55), rgb(232 197 49 / 0.38));
+
+  /* Colour: status */
+  --color-danger: light-dark(#a3261b, #ff9a8b);
+  --color-danger-wash: light-dark(#fbe9e6, #3a2422);
+  --color-shadow: light-dark(rgb(27 35 49 / 0.16), rgb(0 0 0 / 0.5));
+
+  /* Type: one family, hierarchy through width and weight */
+  --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-width-expanded: 125%; /* page and series titles */
+  --font-width-normal: 100%; /* interface text */
+  --font-width-condensed: 87.5%; /* dense lists */
+  --font-width-narrow: 75%; /* axis labels */
+
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-base: 0.875rem; /* 14px */
+  --text-md: 1rem; /* 16px */
+  --text-lg: 1.3125rem; /* 21px */
+  --text-xl: 1.75rem; /* 28px */
+
+  --leading-tight: 1.2;
+  --leading-base: 1.45;
+  --tracking-title: -0.01em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-title: 640;
+  --weight-bold: 700;
+
+  /* Space: 4px steps */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Shape: radius by role, not one radius for everything */
+  --radius-control: 6px;
+  --radius-panel: 8px;
+  --radius-sheet: 12px;
+  --radius-pill: 999px;
+
+  /* Sizes */
+  --control-height: 2rem;
+  --touch-target: 2.75rem; /* minimum hit area on touch screens */
+  --sidebar-width: 14.25rem;
+  --content-max: 90rem;
+  --gutter: max(var(--space-4), env(safe-area-inset-left, 0px));
+
+  /* Elevation: only for layers that float above the page */
+  --shadow-float: 0 8px 28px var(--color-shadow), 0 1px 3px var(--color-shadow);
+
+  /* Focus: ink ring with a highlighter halo, visible on any background */
+  --focus-ring: 0 0 0 2px var(--color-ink), 0 0 0 5px var(--color-highlighter);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Layers */
+  --z-header: 10;
+  --z-overlay: 50;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}
