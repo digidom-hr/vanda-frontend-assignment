@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
 import { AriaRouterProvider } from "@/components/providers/AriaRouterProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
@@ -39,11 +40,13 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
-        <QueryProvider>
-          <AriaRouterProvider>
-            <AppShell>{children}</AppShell>
-          </AriaRouterProvider>
-        </QueryProvider>
+        <NuqsAdapter>
+          <QueryProvider>
+            <AriaRouterProvider>
+              <AppShell>{children}</AppShell>
+            </AriaRouterProvider>
+          </QueryProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );
