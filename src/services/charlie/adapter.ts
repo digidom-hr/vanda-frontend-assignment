@@ -9,7 +9,7 @@ import {
   type ServiceAdapter,
 } from "@/server/adapter-kit";
 import type { SeriesMeta } from "../types";
-import { charlieMeta, type CharlieSignal } from "./meta";
+import { charlieMeta, type CharlieLatest } from "./meta";
 
 const seriesSchema = z.object({
   series_id: z.string().min(1),
@@ -34,17 +34,6 @@ const latestSchema = z.object({
   unit: z.string(),
   signal: z.enum(["high", "mid", "low"]),
 });
-
-/** Latest value of a charlie series, with the service's signal classification. */
-export interface CharlieLatest {
-  readonly seriesId: string;
-  readonly name: string;
-  readonly category: string;
-  readonly t: number;
-  readonly value: number;
-  readonly unit: string;
-  readonly signal: CharlieSignal;
-}
 
 export const charlieAdapter: ServiceAdapter = {
   parseSeries(items) {
