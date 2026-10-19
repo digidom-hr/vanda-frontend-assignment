@@ -1,0 +1,156 @@
+.panel {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+}
+
+.titles {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.panel[data-variant="primary"] .title {
+  font-size: var(--text-md);
+}
+
+.subtitle {
+  color: var(--color-graphite);
+  font-size: var(--text-sm);
+}
+
+.headerEnd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2) var(--space-3);
+  margin-left: auto;
+}
+
+.readout {
+  color: var(--color-graphite);
+  font-size: var(--text-sm);
+  text-align: right;
+}
+
+/* The value is the point of the readout; context stays secondary. */
+.readout :where(b, strong) {
+  color: var(--color-ink);
+  font-weight: var(--weight-semibold);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.views {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+}
+
+.viewButton {
+  min-height: 1.5rem;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: none;
+  color: var(--color-graphite);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.viewButton[data-selected] {
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+.viewButton[data-focus-visible] {
+  box-shadow: var(--focus-ring);
+}
+
+@media (pointer: coarse) {
+  .viewButton {
+    min-height: 2.25rem;
+    padding: 0 var(--space-3);
+  }
+}
+
+.body {
+  position: relative;
+  min-width: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+/* Refetch keeps the frame, dimmed. */
+.body[data-refreshing] {
+  opacity: 0.55;
+}
+
+.loading {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(25% - 1px),
+    var(--color-grid) calc(25% - 1px),
+    var(--color-grid) 25%
+  );
+}
+
+.state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  color: var(--color-graphite);
+  text-align: center;
+  border: 1px dashed var(--color-rule);
+  border-radius: var(--radius-control);
+}
+
+.state[role="alert"] {
+  color: var(--color-danger);
+  background: var(--color-danger-wash);
+  border-color: transparent;
+}
+
+.retry {
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-control);
+  background: none;
+  color: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
