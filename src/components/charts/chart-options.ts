@@ -162,7 +162,9 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
       height: spec.height,
       backgroundColor: "transparent",
       style: { fontFamily: tokens.fontFamily },
-      spacing: [12, 4, 4, 0],
+      // Right spacing gives a date label centred on the last tick room to
+      // extend (see xAxis.labels.overflow).
+      spacing: [12, 24, 4, 0],
       animation,
     },
     accessibility: {
@@ -206,7 +208,9 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
       lineColor: tokens.rule,
       tickColor: tokens.rule,
       gridLineWidth: 0,
-      labels: { style: axisLabelStyle },
+      // "allow": edge labels extend into the chart spacing instead of being
+      // shortened to "Jan…" (Highcharts' default "justify" behaviour).
+      labels: { style: axisLabelStyle, overflow: "allow" },
       // One date vocabulary on every chart, whatever the tick spacing.
       dateTimeLabelFormats: {
         minute: "%H:%M",

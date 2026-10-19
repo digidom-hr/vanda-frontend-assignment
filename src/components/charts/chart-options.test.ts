@@ -115,6 +115,12 @@ describe("buildChartOptions", () => {
     expect(get(yAxis, "labels", "style", "color")).toBe(TOKENS.graphite);
   });
 
+  it("never shortens the last date label to an ellipsis", () => {
+    const options = buildChartOptions(spec(), TOKENS);
+    expect(get(options, "xAxis", "labels", "overflow")).toBe("allow");
+    expect((get(options, "chart", "spacing") as number[])[1]).toBeGreaterThanOrEqual(24);
+  });
+
   it("adds a zero baseline for signed data", () => {
     const options = buildChartOptions(spec({ zeroLine: true }), TOKENS);
     expect(get(options, "yAxis", "plotLines", 0)).toMatchObject({ value: 0, width: 1 });
