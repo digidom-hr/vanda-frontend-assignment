@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from "react-aria-components";
 import { chartTable } from "@/components/charts/chart-table";
 import type { ChartSpec } from "@/components/charts/chart-options";
-import { TimeChart } from "@/components/charts/TimeChart";
+import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
 import { Panel } from "@/components/panel/Panel";
 import { useDashboardState } from "@/hooks/useDashboardState";
 import { useSeriesList, useTimeseries } from "@/hooks/useServiceData";
@@ -50,6 +50,9 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   const service = getService(serviceId);
   const config = DASHBOARDS[serviceId];
   const [state, actions] = useDashboardState(service);
+
+  // Fetch the chart code in parallel with the data rather than after it.
+  useEffect(preloadTimeChart, []);
   const catalog = useSeriesList(serviceId);
 
   const selection = useMemo(
@@ -82,6 +85,26 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   );
   const dataExtent = extentOf(main.data?.series ?? []) ?? extent;
   const range = dataExtent ? resolveRange(rangeSelection, dataExtent) : null;
+  const rangeMin = range?.min;
+  const rangeMax = range?.max;
+
+  // Panels rebuild their charts only when an input really changes. Keyed on
+  // primitives (not the freshly created range object), so re-renders caused by
+  // fetch status alone don't rerun transforms or rebuild charts.
+  const ctx = useMemo<PanelContext | null>(
+    () =>
+      primary && rangeMin !== undefined && rangeMax !== undefined
+        ? {
+            service,
+            series: selection.series,
+            columns,
+            frequency,
+            range: { min: rangeMin, max: rangeMax },
+            transforms: state.transforms,
+          }
+        : null,
+    [primary, service, selection.series, columns, frequency, rangeMin, rangeMax, state.transforms],
+  );
 
   if (catalog.isError && !catalog.data) {
     const message = catalog.error instanceof ApiError ? catalog.error.message : `${service.label} couldn't be loaded.`;
@@ -113,10 +136,6 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
       }
     : null;
 
-  const ctx: PanelContext | null =
-    primary && range
-      ? { service, series: selection.series, columns, frequency, range, transforms: state.transforms }
-      : null;
   const mainStatus = main.isError && !main.data ? "error" : main.data ? "success" : "pending";
   const isRefreshing = main.isPlaceholderData || (main.isFetching && main.data !== undefined);
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { preloadTimeChart } from "@/components/charts/TimeChart";
 import { SERVICES } from "@/services/registry";
 import styles from "./ServiceNav.module.css";
 
@@ -19,7 +20,14 @@ export function ServiceNav() {
           const current = isServicePath(pathname, service.id);
           return (
             <li key={service.id}>
-              <Link href={`/${service.id}`} aria-current={current ? "page" : undefined} className={styles.link}>
+              <Link
+                href={`/${service.id}`}
+                aria-current={current ? "page" : undefined}
+                className={styles.link}
+                // Every service page draws charts: start loading that code on intent.
+                onMouseEnter={preloadTimeChart}
+                onFocus={preloadTimeChart}
+              >
                 {service.label}
               </Link>
             </li>
