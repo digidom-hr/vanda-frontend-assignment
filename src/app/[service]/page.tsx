@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ServiceDashboard, ServiceDashboardSkeleton } from "@/components/dashboard/ServiceDashboard";
+import { PageTransition } from "@/components/shell/PageTransition";
 import { findService, isServiceId, SERVICES } from "@/services/registry";
 
 interface ServicePageProps {
@@ -27,8 +28,10 @@ export default async function ServicePage({ params }: ServicePageProps) {
   // The dashboard reads its view from the URL's query string, so on this
   // statically generated page it must render inside a Suspense boundary.
   return (
-    <Suspense fallback={<ServiceDashboardSkeleton serviceId={id} />}>
-      <ServiceDashboard serviceId={id} />
-    </Suspense>
+    <PageTransition id={id}>
+      <Suspense fallback={<ServiceDashboardSkeleton serviceId={id} />}>
+        <ServiceDashboard serviceId={id} />
+      </Suspense>
+    </PageTransition>
   );
 }

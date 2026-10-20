@@ -78,6 +78,63 @@ svg {
   color: var(--color-on-accent);
 }
 
+/*
+ * View transitions (React <ViewTransition>): motion that answers navigation.
+ * Only the named parts animate; the rest of the page, header included, swaps
+ * instantly. Durations come from the motion tokens, which are 0 under
+ * prefers-reduced-motion, so the swaps are then instant too.
+ */
+::view-transition {
+  /* Clicks during a transition reach the live page instead of the overlay. */
+  pointer-events: none;
+}
+
+::view-transition-old(root) {
+  display: none;
+}
+
+::view-transition-new(root) {
+  animation: none;
+}
+
+/*
+ * Content swaps (a page, or a series' title): in place, the old content
+ * leaves quickly and the new arrives only after it has gone, so two texts
+ * never overlap.
+ */
+::view-transition-group(.content-swap) {
+  animation: none;
+}
+
+::view-transition-old(.content-swap) {
+  animation: var(--duration-fast) ease-in both vt-fade-out;
+}
+
+::view-transition-new(.content-swap) {
+  animation: var(--duration-base) var(--ease-out) var(--duration-fast) both vt-rise-in;
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-rise-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* Hidden visually, still announced by screen readers. */
 .visually-hidden {
   position: absolute;
