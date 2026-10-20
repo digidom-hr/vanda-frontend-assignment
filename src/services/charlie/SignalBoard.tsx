@@ -46,7 +46,12 @@ export function SignalBoard({ ctx, onShowSeries, className }: CustomPanelProps) 
   const latest = useCharlieLatest();
   const items = useMemo(() => latest.data?.latest ?? [], [latest.data]);
   const groups = useMemo(() => groupLatest(items), [items]);
-  const shown = new Set(ctx?.series.map((s) => s.id) ?? []);
+  const shownIds = ctx?.series.map((s) => s.id) ?? [];
+  const shown = new Set(shownIds);
+  // React Aria re-renders a row only when its item changes, but these rows
+  // also depend on which series is shown. Passed as a primitive, so the rows
+  // re-render exactly when the shown series change (same fix as SeriesPicker).
+  const dependencies = [shownIds.join(",")];
 
   const counts = { high: 0, mid: 0, low: 0 };
   for (const item of items) counts[item.signal]++;
@@ -75,14 +80,18 @@ export function SignalBoard({ ctx, onShowSeries, className }: CustomPanelProps) 
       <GridList
         aria-label="Latest signals"
         onAction={(key: Key) => onShowSeries(String(key))}
+        dependencies={dependencies}
         className={styles.list}
         style={{ maxHeight: 560 }}
       >
-        <Collection items={groups}>
+        <Collection items={groups} dependencies={dependencies}>
           {(group) => (
             <GridListSection id={group.id}>
               <GridListHeader className={styles.header}>{group.label}</GridListHeader>
-              <Collection items={group.items.map((item) => ({ ...item, id: item.seriesId }))}>
+              <Collection
+                items={group.items.map((item) => ({ ...item, id: item.seriesId }))}
+                dependencies={dependencies}
+              >
                 {(item) => {
                   const signal = SIGNAL_TEXT[item.signal];
                   return (

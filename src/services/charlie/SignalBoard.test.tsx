@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from "@testing-library/react";
+import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { getService } from "@/services/registry";
@@ -76,6 +77,24 @@ describe("SignalBoard", () => {
     renderWithProviders(<SignalBoard ctx={ctx} onShowSeries={onShowSeries} />);
     await userEvent.click(await screen.findByText("North America Rates Composite"));
     expect(onShowSeries).toHaveBeenCalledWith("C-0002");
+  });
+
+  it("moves the shown mark to the row that was pressed", async () => {
+    // The page passes the new selection back in, as the dashboard does.
+    function Harness() {
+      const [shownId, setShownId] = useState("C-0001");
+      const series = ctx.series.map((s) => ({ ...s, id: shownId }));
+      return <SignalBoard ctx={{ ...ctx, series }} onShowSeries={setShownId} />;
+    }
+    stubApi(() => Response.json({ latest: LATEST }));
+    renderWithProviders(<Harness />);
+    const list = await screen.findByRole("grid", { name: "Latest signals" });
+    await userEvent.click(within(list).getByText("North America Rates Composite"));
+
+    await waitFor(() =>
+      expect(within(list).getByRole("row", { name: /North America Rates/ })).toHaveAttribute("data-shown"),
+    );
+    expect(within(list).getByRole("row", { name: /North America Equity/ })).not.toHaveAttribute("data-shown");
   });
 
   it("offers a retry when the latest values can't load", async () => {
