@@ -63,6 +63,9 @@
   --color-on-hero-rule: rgb(255 255 255 / 0.35);
   --color-on-hero-wash: rgb(255 255 255 / 0.1);
 
+  /* Colour: the onboarding tour dims everything around the highlighted control */
+  --color-tour-dim: light-dark(rgb(26 8 41 / 0.55), rgb(0 0 0 / 0.65));
+
   /* Colour: the logo, exactly as Vanda's two logo files (vanda-logo.svg / vanda-logo-white.svg) */
   --color-brand-mark: light-dark(#6319a1, #c39bec);
   --color-brand-wordmark: light-dark(#3d3d3d, #ffffff);

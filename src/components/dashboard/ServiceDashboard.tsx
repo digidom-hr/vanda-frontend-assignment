@@ -10,6 +10,7 @@ import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { Icon } from "@/components/icons/Icon";
 import { Panel, SLOW_LOAD_MESSAGE, SLOW_LOAD_MS } from "@/components/panel/Panel";
+import { ServiceTour } from "@/components/tour/ServiceTour";
 import { useDashboardState } from "@/hooks/useDashboardState";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { useSeriesList, useTimeseries } from "@/hooks/useServiceData";
@@ -194,7 +195,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
 
   return (
     <div className={styles.layout}>
-      <aside className={styles.sidebar} aria-label={`${service.label} series`}>
+      <aside className={styles.sidebar} aria-label={`${service.label} series`} data-tour="picker">
         {pickerProps ? <SeriesPicker {...pickerProps} /> : <SeriesPickerSkeleton label={`${service.label} series`} />}
       </aside>
 
@@ -230,7 +231,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           </p>
         )}
 
-        <div className={styles.controls}>
+        <div className={styles.controls} data-tour="view-controls">
           <FrequencyControl
             // Until the series are known, offer the service's frequencies: the
             // usual outcome, and the control keeps its final size while loading.
@@ -295,6 +296,9 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           </div>
         </ChartSyncProvider>
       </div>
+
+      {/* Starts once the charts and the navigator are there, so every step has something to point at. */}
+      <ServiceTour ready={main.data !== undefined && overviewSeries !== undefined} />
     </div>
   );
 }
@@ -442,7 +446,9 @@ function noop(): void {}
 function MobilePicker(props: SeriesPickerProps) {
   return (
     <DialogTrigger>
-      <Button className={styles.changeSeries}>Change series</Button>
+      <Button className={styles.changeSeries} data-tour="picker-mobile">
+        Change series
+      </Button>
       <ModalOverlay isDismissable className={styles.overlay}>
         <Modal className={styles.sheet}>
           <Dialog className={styles.sheetDialog} aria-labelledby="series-sheet-title">

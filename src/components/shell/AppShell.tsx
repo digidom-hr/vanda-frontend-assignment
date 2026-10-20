@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { VandaLogo } from "@/components/brand/VandaLogo";
 import { SearchDialog } from "@/components/search/SearchDialog";
+import { TourButton } from "@/components/tour/TourButton";
 import styles from "./AppShell.module.css";
 import { ServiceNav } from "./ServiceNav";
 import { ThemeToggle } from "./ThemeToggle";
@@ -24,6 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <ServiceNav />
           <div className={styles.tools}>
+            <TourButton />
             <ThemeToggle />
           </div>
         </div>

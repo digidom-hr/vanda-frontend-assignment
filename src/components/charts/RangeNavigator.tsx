@@ -91,7 +91,7 @@ export function RangeNavigator(props: RangeNavigatorProps) {
   );
 
   return (
-    <div className={styles.wrap} role="group" aria-label={label}>
+    <div className={styles.wrap} role="group" aria-label={label} data-tour="navigator">
       <div className={styles.frame} style={{ height: NAVIGATOR_TOTAL_HEIGHT }}>
         <RangeNavigatorClient {...props} onLayout={setPlot} />
         {/* Keyboard layer: invisible until focused, aligned with Highcharts' plot; the pointer passes through. */}

@@ -37,6 +37,7 @@ The app reads the API's address from `MOCK_API_URL` (default `http://localhost:4
 - **Transforms** on the main panel: moving average, rolling sum, percent change, cumulative and z-score (over the whole history or a rolling window). They can be chained, for example `MA(20) then % change`, and the axis unit follows.
 - **Compare** up to six series, rebased to 100 at the start of the visible range, so series of different size are readable on one axis.
 - **Shareable views:** series, frequency, range and transforms live in the URL. Reload, Back and Forward, and sending a link all keep the view.
+- **A short onboarding tour** on the first visit to a service page: a spotlight on each control in turn, keyboard and screen-reader friendly, replayable from the header's "?" button.
 - **Light and dark themes,** following the system setting by default, and a layout that works from phone to wide desktop.
 
 ## Architecture
@@ -99,8 +100,8 @@ Then add one entry each to the registry, `ADAPTERS` and `DASHBOARDS`. Those maps
 ## Quality
 
 - **Tests:**
-  - 409 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
-  - 41 end-to-end tests (Playwright) against the real app and the unchanged mock API, on desktop and phone sizes, including simulated outages and slow loads;
+  - 420 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
+  - 45 end-to-end tests (Playwright) against the real app and the unchanged mock API, on desktop and phone sizes, including simulated outages and slow loads;
   - axe accessibility audits of every page in light and dark mode.
 - **CI:** GitHub Actions runs `verify` and the end-to-end suite on every pull request and on `main`.
 - **Accessibility:**
