@@ -161,4 +161,18 @@ describe("ServiceDashboard", () => {
     await user.click(screen.getByRole("button", { name: "Show the last year" }));
     expect(onUrlUpdate.mock.calls.at(-1)?.[0].searchParams.get("range")).toBeNull(); // 1Y is the default
   });
+
+  it("shows the panels loading (not a blank page) while the catalog is on its way", async () => {
+    stubApi(() => new Promise<Response>(() => {})); // never answers
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <NuqsTestingAdapter>
+          <ServiceDashboard serviceId="alpha" />
+        </NuqsTestingAdapter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByText("Loading Price")).toBeInTheDocument();
+    expect(screen.getByText("Loading Rank among 40")).toBeInTheDocument();
+  });
 });

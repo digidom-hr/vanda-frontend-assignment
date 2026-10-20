@@ -89,6 +89,16 @@
   );
 }
 
+.slow {
+  position: absolute;
+  inset: auto var(--space-4) var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-highlighter);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+}
+
 .state {
   position: absolute;
   inset: 0;

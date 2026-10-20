@@ -6,8 +6,9 @@ import { ChartSyncProvider } from "@/components/charts/ChartSync";
 import { chartTable } from "@/components/charts/chart-table";
 import type { ChartSpec } from "@/components/charts/chart-options";
 import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
-import { Panel } from "@/components/panel/Panel";
+import { Panel, SLOW_LOAD_MESSAGE, SLOW_LOAD_MS } from "@/components/panel/Panel";
 import { useDashboardState } from "@/hooks/useDashboardState";
+import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { useSeriesList, useTimeseries } from "@/hooks/useServiceData";
 import { ApiError } from "@/lib/api-client";
 import {
@@ -87,8 +88,13 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   const overviewSeries = overview.data?.series[0];
 
   // Only the panels shown for this selection: e.g. a net-only series must not request "gross".
+  // Until the catalog arrives no series is known, so availability can't be
+  // decided yet: show every panel in its loading state rather than a blank page.
   const panels = useMemo(
-    () => config.panels.filter((panel) => panelAvailable(panel, { series: selection.series })),
+    () =>
+      selection.series.length === 0
+        ? config.panels
+        : config.panels.filter((panel) => panelAvailable(panel, { series: selection.series })),
     [config.panels, selection.series],
   );
   const fields = useMemo(() => [...new Set(panels.flatMap((p) => p.fields))], [panels]);
@@ -124,6 +130,10 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
         : null,
     [primary, service, selection.series, columns, frequency, rangeMin, rangeMax, state.transforms],
   );
+
+  // One explanation for the whole page when loading is slow (e.g. a data service
+  // waking up). Declared before the early return below: hooks must always run.
+  const slowLoad = useDelayedFlag(catalog.isPending || (primary !== undefined && main.isPending), SLOW_LOAD_MS);
 
   if (catalog.isError && !catalog.data) {
     const message = catalog.error instanceof ApiError ? catalog.error.message : `${service.label} couldn't be loaded.`;
@@ -222,6 +232,12 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           </div>
         )}
 
+        {slowLoad && (
+          <p className={styles.notice} role="status">
+            {SLOW_LOAD_MESSAGE}
+          </p>
+        )}
+
         <ChartSyncProvider>
           <div className={styles.panels}>
             {panels.map((panel) =>
@@ -292,6 +308,7 @@ function DashboardPanel({
       onRetry={onRetry}
       isEmpty={status === "success" && spec === null}
       emptyMessage={emptyMessage}
+      explainSlowLoad={false}
       toolbar={toolbar}
       isRefreshing={isRefreshing}
       table={table}
