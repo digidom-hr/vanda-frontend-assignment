@@ -23,10 +23,8 @@ export function FrequencyControl({
   value: Frequency;
   onChange: (frequency: Frequency) => void;
 }) {
-  // A single frequency is a fact, not a choice: show it as text.
-  if (frequencies.length < 2) {
-    return <span className={styles.static}>{FREQUENCY_LABELS[value]}</span>;
-  }
+  // A single frequency (all of charlie) shows as the same control with its one
+  // option selected: it reads like the other pages, and pressing it changes nothing.
   return (
     <SegmentedControl
       label="Frequency"
