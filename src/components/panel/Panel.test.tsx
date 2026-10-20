@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { TableData } from "@/components/charts/chart-table";
 import { ApiError } from "@/lib/api-client";
-import { Panel, type PanelProps } from "./Panel";
+import { LOADING_LABEL_MS, Panel, type PanelProps } from "./Panel";
 
 const TABLE: TableData = {
   caption: "Price (USD)",
@@ -65,6 +65,33 @@ describe("Panel", () => {
     const { container } = renderPanel({ status: "pending", placeholder: "list" });
     expect(container.querySelector("[data-tone='area']")).toBeNull();
     expect(container.querySelectorAll("[data-placeholder='list'] [data-tone='text']").length).toBeGreaterThan(10);
+  });
+
+  it("shows Vanda's mark and the loading label only once a load takes a while", () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = renderPanel({ status: "pending" });
+      // A fast load shows only the placeholder; the label is there for screen readers.
+      expect(screen.getByText("Loading Price")).toHaveClass("visually-hidden");
+      expect(container.querySelector("svg")).toBeNull();
+
+      act(() => vi.advanceTimersByTime(LOADING_LABEL_MS));
+      expect(screen.getByText("Loading Price")).not.toHaveClass("visually-hidden");
+      expect(container.querySelector("svg[aria-hidden='true'] path")).not.toBeNull(); // the V, decorative
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps the label hidden over a list placeholder, where rows already show the shape", () => {
+    vi.useFakeTimers();
+    try {
+      renderPanel({ status: "pending", placeholder: "list" });
+      act(() => vi.advanceTimersByTime(LOADING_LABEL_MS));
+      expect(screen.getByText("Loading Price")).toHaveClass("visually-hidden");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("explains a load that takes longer than usual", () => {
