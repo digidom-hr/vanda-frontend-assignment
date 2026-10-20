@@ -32,6 +32,12 @@ function shiftInto(span: Span, extent: Span): Span {
   return { min: span.min, max: span.min + width };
 }
 
+/** The time `count` data points take on average, over `extent` holding `points` points: a zoom limit that suits any frequency. */
+export function widthOfPoints(extent: Span, points: number, count: number): number {
+  const full = extent.max - extent.min;
+  return points > 1 ? Math.min(full, (full / (points - 1)) * count) : full;
+}
+
 /**
  * Wheel distance (pixels) to a zoom factor. One mouse-wheel notch (~100) is
  * about 30%; trackpad scrolls and pinches arrive as many small steps that add up.

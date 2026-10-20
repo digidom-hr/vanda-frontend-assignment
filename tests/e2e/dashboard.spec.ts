@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { search, waitForCharts } from "./helpers";
 
 test.describe("service dashboard", () => {
@@ -122,18 +122,18 @@ test.describe("service dashboard", () => {
     await page.goto("/alpha?series=A-0001");
     await waitForCharts(page);
     const price = page.getByRole("region", { name: "Price" });
-    const firstLabel = () => price.locator(".highcharts-xaxis-labels").first().locator("text").first().textContent();
-    const before = await firstLabel();
+    await drawn(price);
+    const before = await xLabels(price);
 
-    const plot = (await price.locator(".highcharts-plot-background").first().boundingBox())!;
+    const plot = (await chartOf(price).locator(".highcharts-plot-background").boundingBox())!;
     await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2);
     await page.mouse.wheel(0, 300);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-    expect(await firstLabel()).toBe(before); // not zoomed
+    expect(await xLabels(price)).toEqual(before); // not zoomed
 
     // A range chosen for the page reaches this chart too.
     await page.getByRole("radio", { name: "Last 3 months" }).click();
-    await expect.poll(firstLabel).not.toBe(before);
+    await expect.poll(() => xLabels(price)).not.toEqual(before);
   });
 
   test("compares series rebased to 100", async ({ page }) => {
@@ -189,50 +189,74 @@ test.describe("service dashboard", () => {
     expect(Math.abs(daysShown(page.url()) - zoomed)).toBeLessThanOrEqual(1);
   });
 
-  test("dragging a chart pans every panel, once, on release", async ({ page }) => {
+  test("dragging a chart pans that chart only, until Reset zoom", async ({ page }) => {
     await page.goto("/alpha?series=A-0001&range=3M");
     await waitForCharts(page);
-    const plot = (await page
-      .getByRole("region", { name: "Price" })
-      .locator(".highcharts-plot-background")
-      .first()
-      .boundingBox())!;
+    const price = page.getByRole("region", { name: "Price" });
+    const flow = page.getByRole("region", { name: "Net order flow" });
+    await drawn(price, flow);
+    const priceDates = await xLabels(price);
+    const flowDates = await xLabels(flow);
+
+    const plot = (await chartOf(price).locator(".highcharts-plot-background").boundingBox())!;
     const y = plot.y + plot.height / 2;
     await page.mouse.move(plot.x + plot.width / 3, y);
     await page.mouse.down();
     await page.mouse.move(plot.x + plot.width / 3 + 300, y, { steps: 10 });
-    // The charts move live; the URL and the data wait for the release.
-    expect(page.url()).not.toContain("from=");
     await page.mouse.up();
 
-    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2}/);
-    expect(new URL(page.url()).searchParams.get("to")! < "2025-12-31").toBe(true);
-    // Another panel follows: its latest value is from before the old end.
-    const flow = page.getByRole("region", { name: "Net order flow" });
-    await expect(flow.locator("header")).not.toContainText("31 Dec 2025");
+    await expect.poll(() => xLabels(price)).not.toEqual(priceDates);
+    expect(await xLabels(flow)).toEqual(flowDates); // the other panels stay put
+    expect(page.url()).not.toContain("from="); // and so does the page's range
+
+    await price.getByRole("button", { name: "Reset zoom" }).click();
+    await expect.poll(() => xLabels(price)).toEqual(priceDates);
+    await expect(price.getByRole("button", { name: "Reset zoom" })).toHaveCount(0);
   });
 
-  test("Ctrl + wheel (a trackpad pinch) zooms a chart's range; a sideways swipe pans it", async ({ page }) => {
+  test("Ctrl + wheel (a trackpad pinch) zooms one chart, a sideways swipe pans it, the navigator resets it", async ({
+    page,
+  }) => {
     await page.goto("/alpha?series=A-0001&range=1Y");
     await waitForCharts(page);
-    const plot = (await page
-      .getByRole("region", { name: "Price" })
-      .locator(".highcharts-plot-background")
-      .first()
-      .boundingBox())!;
+    const price = page.getByRole("region", { name: "Price" });
+    const flow = page.getByRole("region", { name: "Net order flow" });
+    await drawn(price, flow);
+    const flowDates = await xLabels(flow);
+    const plot = (await chartOf(price).locator(".highcharts-plot-background").boundingBox())!;
     await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2);
+
+    const before = await xLabels(price);
     await page.keyboard.down("Control");
     await page.mouse.wheel(0, -300);
     await page.keyboard.up("Control");
-    await expect(page).toHaveURL(/from=/);
-    const zoomed = daysShown(page.url());
-    expect(zoomed).toBeLessThan(200);
+    await expect.poll(() => xLabels(price)).not.toEqual(before);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
-    const to = new URL(page.url()).searchParams.get("to")!;
+    const zoomed = await xLabels(price);
     await page.mouse.wheel(-300, 0);
-    await expect.poll(() => new URL(page.url()).searchParams.get("to")! < to).toBe(true);
-    expect(Math.abs(daysShown(page.url()) - zoomed)).toBeLessThanOrEqual(1);
+    await expect.poll(() => xLabels(price)).not.toEqual(zoomed);
+    expect(await xLabels(flow)).toEqual(flowDates);
+    expect(page.url()).not.toContain("from=");
+
+    // A new page range (here from the navigator's keys) brings every chart back in step.
+    await page.getByRole("slider", { name: "End of period" }).focus();
+    await page.keyboard.press("Shift+ArrowLeft");
+    await expect(page).toHaveURL(/from=/);
+    await expect(price.getByRole("button", { name: "Reset zoom" })).toHaveCount(0);
+  });
+
+  test("hovering a chart marks the date in that chart only", async ({ page }) => {
+    await page.goto("/alpha?series=A-0001&range=3M");
+    await waitForCharts(page);
+    const price = page.getByRole("region", { name: "Price" });
+    const flow = page.getByRole("region", { name: "Net order flow" });
+    await drawn(price, flow);
+    const plot = (await chartOf(price).locator(".highcharts-plot-background").boundingBox())!;
+    await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2, { steps: 5 });
+    // Counted, not "visible": a 1px vertical line has an empty bounding box.
+    await expect(price.locator(".highcharts-crosshair")).toHaveCount(1);
+    await expect(flow.locator(".highcharts-crosshair")).toHaveCount(0);
   });
 
   test("the navigator's keyboard controls drive every panel", async ({ page }) => {
@@ -277,4 +301,23 @@ test.describe("service dashboard", () => {
 function daysShown(url: string): number {
   const params = new URL(url).searchParams;
   return (Date.parse(params.get("to")!) - Date.parse(params.get("from")!)) / 86_400_000;
+}
+
+/** A panel's own chart: not the navigator under the main one. */
+function chartOf(region: Locator): Locator {
+  return region.locator(
+    "xpath=.//*[contains(@class, 'highcharts-container') and not(ancestor::*[@data-tour='navigator'])]",
+  );
+}
+
+/** Waits until the panel's chart has drawn its axis (every panel loads on its own). */
+async function drawn(...regions: Locator[]): Promise<void> {
+  for (const region of regions) {
+    await expect(chartOf(region).locator(".highcharts-xaxis-labels text").first()).toBeAttached({ timeout: 20_000 });
+  }
+}
+
+/** A chart's x-axis labels: they change when its visible range does. */
+function xLabels(region: Locator): Promise<string[]> {
+  return chartOf(region).locator(".highcharts-xaxis-labels text").allTextContents();
 }

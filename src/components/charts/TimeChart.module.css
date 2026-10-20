@@ -39,3 +39,30 @@
 .container :global(.highcharts-focus-border) {
   stroke: var(--color-accent);
 }
+
+/* Shown once a chart is zoomed or panned on its own: back to the page's period. */
+.reset {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 1.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.reset:hover {
+  border-color: var(--color-accent);
+}
+
+.reset:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
