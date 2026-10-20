@@ -32,8 +32,9 @@ describe("buildNavigatorOptions", () => {
   it("marks the selected period with the accent wash, in the design's colours", () => {
     const options = buildNavigatorOptions(spec, TOKENS);
     expect(options.maskFill).toBe(TOKENS.accentWash);
-    expect(options.handles).toMatchObject({ backgroundColor: TOKENS.surface, borderColor: TOKENS.ink });
-    expect(options.outlineColor).toBe(TOKENS.rule);
+    // Solid accent grips (ridges hidden by a matching border) and accent edges.
+    expect(options.handles).toMatchObject({ backgroundColor: TOKENS.accent, borderColor: TOKENS.accent });
+    expect(options.outlineColor).toBe(TOKENS.accent);
   });
 
   it("reports a range only when a drag ends", () => {

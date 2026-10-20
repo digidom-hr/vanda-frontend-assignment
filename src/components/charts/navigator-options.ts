@@ -36,14 +36,18 @@ export function buildNavigatorOptions(spec: NavigatorSpec, tokens: ChartTokens):
     margin: 0,
     maskFill: tokens.accentWash,
     maskInside: true,
-    outlineColor: tokens.rule,
+    // The selected period reads as one shape: accent edges and accent grips on the wash.
+    outlineColor: tokens.accent,
     outlineWidth: 1,
     handles: {
-      backgroundColor: tokens.surface,
-      borderColor: tokens.ink,
+      // Slim rounded grips, filled with the accent. The border matches the
+      // fill, so Highcharts' default grip ridges disappear into it.
+      backgroundColor: tokens.accent,
+      borderColor: tokens.accent,
       lineWidth: 1,
-      // 24px tall grips: the WCAG 2.2 minimum target size.
-      width: 9,
+      borderRadius: 4,
+      // 24px tall: the WCAG 2.2 minimum target size.
+      width: 8,
       height: 24,
     },
     series: {
