@@ -311,6 +311,20 @@ test.describe("service dashboard", () => {
     await waitForCharts(page);
     expect(requests.some((u) => u.includes("from=2025-11-30") && u.includes("to=2025-12-31"))).toBe(true);
   });
+
+  test("shows the full 5-minute history, loaded in pieces", async ({ page }) => {
+    const pieces: string[] = [];
+    page.on("response", (r) => {
+      if (r.url().includes("frequency=5min") && r.ok()) pieces.push(new URL(r.url()).searchParams.get("from")!);
+    });
+    await page.goto("/alpha?series=A-0001&freq=5min&range=All");
+    const price = page.getByRole("region", { name: "Price" });
+    await drawn(price);
+    await expect.poll(() => xLabels(price)).toContain("Jul 2021"); // from the start of the history
+    await expect(page.getByText(/too much/)).toHaveCount(0);
+    expect(pieces.length).toBeGreaterThan(1);
+    expect(pieces).toContain("2021-01-04");
+  });
 });
 
 /** Days from the URL's `from` to its `to`. */

@@ -66,6 +66,53 @@ describe("useTimeseries", () => {
     );
   });
 
+  it("loads a long 5-minute period in pieces and joins them into one series", async () => {
+    const fetchMock = stubApi((url) => {
+      // Each piece answers with one point at the start of its window.
+      const t = Date.parse(url.searchParams.get("from")!);
+      return Response.json({
+        service: "alpha",
+        frequency: "5min",
+        from: url.searchParams.get("from"),
+        to: url.searchParams.get("to"),
+        series: [{ seriesId: "A-0001", t: [t], fields: { price: [t / 1e9] } }],
+      });
+    });
+    const params: TimeseriesParams = {
+      ids: ["A-0001"],
+      frequency: "5min",
+      from: "2021-01-04",
+      to: "2025-12-31",
+      fields: ["price", "score", "momentum", "rank", "net_value"],
+    };
+    const { result } = renderHook(() => useTimeseries("alpha", params), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const windows = fetchMock.mock.calls.map(([url]) => new URL(String(url), "http://app.test").searchParams);
+    expect(windows.length).toBeGreaterThan(1);
+    expect(windows[0]?.get("from")).toBe("2021-01-04");
+    expect(windows.at(-1)?.get("to")).toBe("2025-12-31");
+    const series = result.current.data?.series[0];
+    expect(series?.t).toHaveLength(windows.length);
+    expect(series?.t).toEqual([...(series?.t ?? [])].sort((a, b) => a - b)); // in date order
+    expect(series?.fields.price).toHaveLength(windows.length);
+    expect([result.current.data?.from, result.current.data?.to]).toEqual(["2021-01-04", "2025-12-31"]);
+  });
+
+  it("asks once for a short 5-minute period", async () => {
+    const fetchMock = stubApi(() => Response.json({ series: [] }));
+    const params: TimeseriesParams = {
+      ids: ["A-0001"],
+      frequency: "5min",
+      from: "2025-12-01",
+      to: "2025-12-31",
+      fields: ["price"],
+    };
+    const { result } = renderHook(() => useTimeseries("alpha", params), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("stays idle without ids", () => {
     const fetchMock = stubApi(() => Response.json({}));
     const none = renderHook(() => useTimeseries("alpha", null), { wrapper: wrapper() });
