@@ -18,6 +18,8 @@ import {
 const DRAG_THRESHOLD_PX = 3;
 /** A zoom stops at about this many data points, whatever the frequency. */
 const MIN_ZOOM_POINTS = 8;
+/** How long the "how to zoom" hint stays after the last plain scroll over a chart. */
+const WHEEL_HINT_MS = 1500;
 
 export interface PlotCorner {
   readonly top: number;
@@ -34,6 +36,11 @@ export interface ChartRange {
   readonly zoomed: PlotCorner | null;
   /** Brings the chart back to the page's range. */
   readonly reset: () => void;
+  /**
+   * True for a moment after a plain scroll over the plot: the page scrolls
+   * (charts never trap the wheel), and the chart says how to zoom instead.
+   */
+  readonly wheelHint: boolean;
 }
 
 /**
@@ -49,6 +56,7 @@ export interface ChartRange {
  */
 export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, range: Span | undefined): ChartRange {
   const [zoomed, setZoomed] = useState<PlotCorner | null>(null);
+  const [wheelHint, setWheelHint] = useState(false);
   const rangeMin = range?.min;
   const rangeMax = range?.max;
   // Drops a wheel or pinch gesture that is still settling (it ends 250 ms after
@@ -130,14 +138,32 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
       return { x, inside };
     };
 
+    // A plain scroll over the plot scrolls the page and shows how to zoom
+    // (the Google Maps pattern): one state change when it appears, one when it goes.
+    let hintTimer: ReturnType<typeof setTimeout> | undefined;
+    const showWheelHint = () => {
+      setWheelHint(true);
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => setWheelHint(false), WHEEL_HINT_MS);
+    };
+    const hideWheelHint = () => {
+      clearTimeout(hintTimer);
+      setWheelHint(false);
+    };
+
     const onWheel = (event: WheelEvent) => {
       const dx = wheelPixels(event.deltaX, event.deltaMode);
       const dy = wheelPixels(event.deltaY, event.deltaMode);
       const zoom = event.ctrlKey || event.metaKey;
-      if (!zoom && Math.abs(dx) <= Math.abs(dy)) return; // A plain wheel scrolls the page.
       const { x, inside } = locate(event);
+      if (!zoom && Math.abs(dx) <= Math.abs(dy)) {
+        // A plain wheel scrolls the page.
+        if (inside) showWheelHint();
+        return;
+      }
       if (!inside) return;
       event.preventDefault();
+      hideWheelHint();
       const { shown, extent, minWidth } = view();
       const span = session.current(shown);
       session.move(
@@ -164,6 +190,7 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
       if (!drag.moved && Math.abs(dx) < DRAG_THRESHOLD_PX) return;
       if (!drag.moved) {
         drag.moved = true;
+        hideWheelHint();
         element.setPointerCapture(drag.id);
         element.style.cursor = "grabbing";
       }
@@ -186,6 +213,7 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
     element.addEventListener("pointerup", onPointerUp);
     element.addEventListener("pointercancel", onPointerUp);
     return () => {
+      clearTimeout(hintTimer);
       removeExtremesListener();
       element.removeEventListener("wheel", onWheel);
       element.removeEventListener("pointerdown", onPointerDown);
@@ -198,5 +226,5 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
     };
   }, [ref]);
 
-  return { zoomed, reset };
+  return { zoomed, reset, wheelHint };
 }

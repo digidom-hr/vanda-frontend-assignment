@@ -129,7 +129,7 @@ export function RangeNavigator(props: RangeNavigatorProps) {
 /** Mouse and trackpad gestures aren't discoverable: name them (pointer devices only, see the CSS). */
 const GESTURE_HINT = (
   <p className={styles.hint}>
-    Scroll here to zoom every chart. Drag a chart to pan it; pinch or Ctrl + scroll to zoom it.
+    Scroll here to zoom every chart. Drag a chart to pan it; pinch or Ctrl/⌘ + scroll to zoom it.
   </p>
 );
 

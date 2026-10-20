@@ -116,9 +116,7 @@ test.describe("service dashboard", () => {
     await expect(page).toHaveURL(/\?series=A-0020$/);
   });
 
-  test("every chart follows the page's range: the wheel scrolls the page instead of zooming a chart", async ({
-    page,
-  }) => {
+  test("every chart follows the page's range: the wheel scrolls the page and says how to zoom", async ({ page }) => {
     await page.goto("/alpha?series=A-0001");
     await waitForCharts(page);
     const price = page.getByRole("region", { name: "Price" });
@@ -130,6 +128,10 @@ test.describe("service dashboard", () => {
     await page.mouse.wheel(0, 300);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
     expect(await xLabels(price)).toEqual(before); // not zoomed
+    // Instead, the chart says how to zoom, for a moment.
+    const hint = price.getByText(/to zoom$/);
+    await expect(hint).toBeVisible();
+    await expect(hint).toHaveCount(0);
 
     // A range chosen for the page reaches this chart too.
     await page.getByRole("radio", { name: "Last 3 months" }).click();
