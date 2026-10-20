@@ -13,6 +13,7 @@ import {
   type Key,
 } from "react-aria-components";
 import { Skeleton } from "@/components/feedback/Skeleton";
+import { Icon } from "@/components/icons/Icon";
 import { formatFacetValue } from "@/lib/format";
 import { matchesQuery } from "@/lib/search";
 import type { SeriesMeta } from "@/services/types";
@@ -133,9 +134,7 @@ export function SeriesPicker({
                         onChange={() => onToggleCompare(s.id)}
                       >
                         <span className={styles.box} aria-hidden="true">
-                          <svg viewBox="0 0 12 12" width="10" height="10">
-                            <path d="M2.5 6.5l2.2 2.2 4.8-5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-                          </svg>
+                          <Icon name="check" size={10} weight={1.75} />
                         </span>
                       </Checkbox>
                       <span className={styles.name}>

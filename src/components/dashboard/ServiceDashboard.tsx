@@ -8,6 +8,7 @@ import type { ChartSpec } from "@/components/charts/chart-options";
 import { preloadRangeNavigator, RangeNavigator, RangeNavigatorSkeleton } from "@/components/charts/RangeNavigator";
 import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
 import { Skeleton } from "@/components/feedback/Skeleton";
+import { Icon } from "@/components/icons/Icon";
 import { Panel, SLOW_LOAD_MESSAGE, SLOW_LOAD_MS } from "@/components/panel/Panel";
 import { useDashboardState } from "@/hooks/useDashboardState";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
@@ -146,6 +147,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
         <h1 className={styles.statusTitle}>{service.label} is unavailable</h1>
         <p>{message}</p>
         <button type="button" className={styles.retry} onClick={() => void catalog.refetch()}>
+          <Icon name="rotate-ccw" size={14} />
           Try again
         </button>
       </div>
