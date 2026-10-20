@@ -104,6 +104,8 @@ export function Panel({
   const showTable = view === "table" && table !== undefined && status === "success" && !isEmpty;
   const labelShown = useDelayedFlag(status === "pending" && placeholder === "chart", LOADING_LABEL_MS);
   const slow = useDelayedFlag(explainSlowLoad && status === "pending", SLOW_LOAD_MS);
+  // New data for a chart already on screen: say so once it takes a moment, so fast loads don't flash.
+  const updating = useDelayedFlag(Boolean(isRefreshing) && status === "success", LOADING_LABEL_MS);
 
   const failure = (message: string, retry?: () => void) => (
     <div className={styles.state} role="alert">
@@ -213,6 +215,16 @@ export function Panel({
         <PanelErrorBoundary fallback={(reset) => failure(`${title} failed to display.`, reset)}>
           {body}
         </PanelErrorBoundary>
+        {/* Hidden from screen readers: the body's aria-busy already says it. */}
+        {updating && !showTable && (
+          <div className={styles.updating} aria-hidden="true">
+            <Skeleton tone="area" className={styles.sweep} />
+            <span className={styles.loadingLabel}>
+              <VandaLogo variant="mark" height={14} className={styles.loadingMark} />
+              Updating {title}
+            </span>
+          </div>
+        )}
       </div>
 
       {footer && <div className={styles.footer}>{footer}</div>}

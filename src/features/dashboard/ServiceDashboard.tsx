@@ -30,7 +30,8 @@ import { formatFacetValue, formatTimestamp, formatValue } from "@/lib/format";
 import { toIsoDate } from "@/lib/time";
 import { DEFAULT_RANGE, MAX_SELECTED_SERIES, resolveRange } from "./url-state";
 import { getService, type ServiceId } from "@/services/registry";
-import type { SeriesColumns } from "@/services/types";
+import type { TimeseriesResponse } from "@/services/api-types";
+import type { Frequency, SeriesColumns, SeriesMeta } from "@/services/types";
 import { DASHBOARDS } from "./configs";
 import { panelAvailable, type ChartPanelDefinition, type PanelContext, type PanelDefinition } from "./panels";
 import styles from "./ServiceDashboard.module.css";
@@ -95,7 +96,9 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
       : null,
   );
   const extent = useMemo(() => extentOf(overview.data?.series ?? []), [overview.data]);
-  const overviewSeries = overview.data?.series[0];
+  // Only the primary series' own overview: while another series' overview is
+  // kept on screen for a new primary, the navigator shows its placeholder.
+  const overviewSeries = overview.data?.series.find((s) => s.seriesId === primary?.id);
 
   // Only the panels shown for this selection: e.g. a net-only series must not request "gross".
   // Until the catalog arrives no series is known, so availability can't be
@@ -196,10 +199,16 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
       }
     : null;
 
-  const mainStatus = main.isError && !main.data ? "error" : main.data ? "success" : "pending";
+  // Data from the previous request stays on screen while new data loads, but
+  // only when it shows the same thing: the same series at the same frequency
+  // (e.g. a new 5-minute window). Another series' data would look empty here,
+  // and daily data would wear a "5-minute" label, so the panels show their
+  // loading state instead.
+  const dataIsCurrent = main.data !== undefined && showsSelection(main.data, frequency, selection.series);
+  const mainStatus = main.isError && !main.data ? "error" : dataIsCurrent ? "success" : "pending";
   // A range too large to load is one page-level problem with one fix, not an error in every panel.
   const tooLarge = main.error instanceof ApiError && main.error.code === "too_large" && !main.data;
-  const isRefreshing = main.isPlaceholderData || (main.isFetching && main.data !== undefined);
+  const isRefreshing = dataIsCurrent && (main.isPlaceholderData || main.isFetching);
 
   // The range control, under the primary chart: it sets the period for every panel.
   let navigator: ReactNode = null;
@@ -214,7 +223,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
         onCommit={commitRange}
       />
     );
-  } else if (catalog.isPending || (primary !== undefined && overview.isPending)) {
+  } else if (catalog.isPending || (primary !== undefined && !overview.isError)) {
     navigator = <RangeNavigatorSkeleton />;
   }
 
@@ -372,7 +381,7 @@ function DashboardPanel({
       variant={panel.layout === "primary" ? "primary" : "secondary"}
       className={LAYOUT_CLASS[panel.layout]}
     >
-      {spec && <TimeChart spec={spec} isRefreshing={isRefreshing} />}
+      {spec && <TimeChart spec={spec} />}
     </Panel>
   );
 }
@@ -416,6 +425,15 @@ function MobilePickerSkeleton() {
  * placeholders as the dashboard's own loading state, so nothing jumps when it
  * takes over.
  */
+/** True when a response holds exactly the shown series, in order, at the shown frequency. */
+function showsSelection(data: TimeseriesResponse, frequency: Frequency, series: readonly SeriesMeta[]): boolean {
+  return (
+    data.frequency === frequency &&
+    data.series.length === series.length &&
+    data.series.every((columns, i) => columns.seriesId === series[i]?.id)
+  );
+}
+
 /** How many of the panels are charts (custom panels, like charlie's signal board, aren't). */
 function chartCount(panels: readonly PanelDefinition[]): number {
   return panels.filter((panel) => panel.kind !== "custom").length;

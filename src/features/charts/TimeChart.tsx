@@ -6,8 +6,6 @@ import styles from "./TimeChart.module.css";
 
 export interface TimeChartProps {
   readonly spec: ChartSpec;
-  /** New data is loading: keep the current frame, dimmed, rather than flashing a placeholder. */
-  readonly isRefreshing?: boolean;
 }
 
 const loadTimeChart = () => import("./TimeChart.client");
@@ -28,14 +26,9 @@ const TimeChartClient = dynamic(loadTimeChart, {
 });
 
 /** A themed, accessible timeseries chart. Reserves its height so nothing shifts while Highcharts loads. */
-export function TimeChart({ spec, isRefreshing }: TimeChartProps) {
+export function TimeChart({ spec }: TimeChartProps) {
   return (
-    <div
-      className={styles.frame}
-      style={{ minHeight: spec.height }}
-      data-refreshing={isRefreshing || undefined}
-      aria-busy={isRefreshing || undefined}
-    >
+    <div className={styles.frame} style={{ minHeight: spec.height }}>
       <TimeChartClient spec={spec} />
     </div>
   );

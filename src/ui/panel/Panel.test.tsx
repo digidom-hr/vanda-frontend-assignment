@@ -139,6 +139,27 @@ describe("Panel", () => {
     expect(screen.getByText("chart").parentElement).toHaveAttribute("data-refreshing");
   });
 
+  it("says it's updating once a refresh takes a while, over the chart it keeps", () => {
+    vi.useFakeTimers();
+    try {
+      const { rerender } = renderPanel({ isRefreshing: true });
+      expect(screen.queryByText("Updating Price")).not.toBeInTheDocument(); // fast refreshes don't flash it
+
+      act(() => vi.advanceTimersByTime(LOADING_LABEL_MS));
+      expect(screen.getByText("Updating Price")).toBeInTheDocument();
+      expect(screen.getByText("chart")).toBeInTheDocument();
+
+      rerender(
+        <Panel title="Price" status="success" bodyHeight={200}>
+          <div>chart</div>
+        </Panel>,
+      );
+      expect(screen.queryByText("Updating Price")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("switches between chart and an accessible table", async () => {
     const user = userEvent.setup();
     renderPanel({ table: TABLE });
