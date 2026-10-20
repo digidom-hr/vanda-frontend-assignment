@@ -140,7 +140,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
-  background: color-mix(in srgb, var(--color-ink) 28%, transparent);
+  background: var(--color-scrim);
 }
 
 .sheet {

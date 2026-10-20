@@ -48,7 +48,7 @@
   justify-content: center;
   align-items: flex-start;
   padding: 12dvh var(--space-4) var(--space-4);
-  background: color-mix(in srgb, var(--color-ink) 28%, transparent);
+  background: var(--color-scrim);
 }
 
 .overlay[data-entering] {
