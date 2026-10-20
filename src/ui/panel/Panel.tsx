@@ -170,25 +170,26 @@ export function Panel({
       data-variant={variant}
       aria-labelledby={headingId}
     >
-      <header className={styles.header}>
+      {/* Laid out by the panel's width only (see the CSS), so the placeholder and the loaded header always match. */}
+      <header className={styles.header} data-tour={table ? "panel-view" : undefined}>
         <div className={styles.titles}>
           <Heading id={headingId} className={styles.title}>
             {title}
           </Heading>
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
-        <div className={styles.headerEnd} data-tour={table ? "panel-view" : undefined}>
-          {readout ? (
-            <div className={styles.readout}>{readout}</div>
-          ) : (
-            status === "pending" && (
-              <div className={styles.readout}>
-                <Skeleton tone="text" width="8rem" />
-              </div>
-            )
-          )}
-          {status === "pending" && placeholder === "chart" && <Skeleton className={styles.viewSwitchPlaceholder} />}
-          {table && (
+        {readout ? (
+          <div className={styles.readout}>{readout}</div>
+        ) : (
+          status === "pending" && (
+            <div className={styles.readout}>
+              <Skeleton tone="text" width="8rem" />
+            </div>
+          )
+        )}
+        {status === "pending" && placeholder === "chart" && <Skeleton className={styles.viewSwitchPlaceholder} />}
+        {table && (
+          <div className={styles.viewSwitch}>
             <SegmentedControl
               label={`${title} view`}
               size="small"
@@ -200,8 +201,8 @@ export function Panel({
                 { id: "table", label: "Table" },
               ]}
             />
-          )}
-        </div>
+          </div>
+        )}
       </header>
 
       {toolbar && <div className={styles.toolbar}>{toolbar}</div>}

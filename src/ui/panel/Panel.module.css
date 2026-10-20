@@ -1,4 +1,6 @@
 .panel {
+  /* Its header lays itself out by the panel's width (container queries below). */
+  container-type: inline-size;
   display: grid;
   align-content: start;
   gap: var(--space-2);
@@ -9,15 +11,40 @@
   background: var(--color-surface);
 }
 
+/*
+ * The header's layout depends on the panel's width only, never on its text:
+ * the loading placeholder (fixed-width bars) and the loaded header (real
+ * text, whose width differs between machines and fonts) then always take the
+ * same height, so nothing below moves when the data arrives. Text that could
+ * vary stays on one line and shortens with "…" rather than wrapping.
+ *
+ * Narrow panels: title and the Chart/Table switch, the readout below.
+ */
 .header {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "titles switch"
+    "readout readout";
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-1) var(--space-4);
+  gap: var(--space-1) var(--space-3);
+}
+
+/* Wide panels: one row, the readout between the title and the switch. */
+@container (min-width: 36rem) {
+  .header {
+    grid-template-columns: minmax(0, max-content) minmax(0, 1fr) auto;
+    grid-template-areas: "titles readout switch";
+    column-gap: var(--space-4);
+  }
+
+  .readout {
+    text-align: right;
+  }
 }
 
 .titles {
+  grid-area: titles;
   display: grid;
   gap: 2px;
   min-width: 0;
@@ -32,30 +59,41 @@
   font-size: var(--text-md);
 }
 
+.subtitle,
+.readout {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .subtitle {
   color: var(--color-graphite);
   font-size: var(--text-sm);
 }
 
-.headerEnd {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-2) var(--space-3);
-  margin-left: auto;
-}
-
 .readout {
+  grid-area: readout;
+  min-width: 0;
   color: var(--color-graphite);
   font-size: var(--text-sm);
-  text-align: right;
 }
 
 /* The value is the point of the readout; context stays secondary. */
 .readout :where(b, strong) {
   color: var(--color-ink);
   font-weight: var(--weight-semibold);
+}
+
+/*
+ * The switch aligns to the top of the row, not to the text baseline: its
+ * placeholder has no text, so on the baseline it would sit higher than the
+ * real switch and make the loading header taller.
+ */
+.viewSwitch,
+.viewSwitchPlaceholder {
+  grid-area: switch;
+  align-self: start;
+  justify-self: end;
 }
 
 /* The Chart/Table switch's footprint (measured), so the header keeps its height when it appears. */
