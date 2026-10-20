@@ -118,13 +118,13 @@ export default function RangeNavigatorClient({
       commit({ min: event.min, max: event.max });
     });
 
-    // Follow a zoom or pan on a chart while it happens.
-    const stopFollowing = sync?.onPreview(move);
-
     // The wheel zooms the period around the pointer; Shift + wheel or a
     // sideways swipe moves it. The charts follow live, the page when it settles.
     const history = { min: first, max: last };
-    const session = createGestureSession((span) => (sync ? sync.preview(span) : move(span)), commit);
+    const session = createGestureSession((span) => {
+      move(span);
+      sync?.preview(span);
+    }, commit);
     let lastPageScroll = -Infinity;
     const onScroll = () => {
       lastPageScroll = performance.now();
@@ -155,7 +155,6 @@ export default function RangeNavigatorClient({
       element.removeEventListener("wheel", onWheel);
       session.cancel();
       cancelAnimationFrame(settleFrame);
-      stopFollowing?.();
       removeRenderListener();
       removeListener();
       nav.destroy();

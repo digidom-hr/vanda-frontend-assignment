@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createGestureSession, panSpan, wheelPixels, wheelZoomFactor, zoomSpan } from "./range-gestures";
+import { createGestureSession, panSpan, wheelPixels, wheelZoomFactor, widthOfPoints, zoomSpan } from "./range-gestures";
 
 const extent = { min: 0, max: 1000 };
 
@@ -45,6 +45,18 @@ describe("wheelZoomFactor", () => {
 
   it("adds up small steps to the same zoom as one big one", () => {
     expect(wheelZoomFactor(10) ** 10).toBeCloseTo(wheelZoomFactor(100));
+  });
+});
+
+describe("widthOfPoints", () => {
+  it("is the average time a number of points take", () => {
+    // 11 points over 0..1000: one every 100.
+    expect(widthOfPoints(extent, 11, 8)).toBe(800);
+  });
+
+  it("never exceeds the whole history", () => {
+    expect(widthOfPoints(extent, 3, 8)).toBe(1000);
+    expect(widthOfPoints(extent, 1, 8)).toBe(1000);
   });
 });
 

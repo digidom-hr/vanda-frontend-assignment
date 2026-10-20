@@ -11,7 +11,7 @@
  * second y-axis.
  */
 // Types come from the Stock build that StockChart renders with (its Axis has Stock-only members).
-import type { Chart, Options, Point, SeriesOptionsType } from "highcharts/highstock.src";
+import type { Options, Point, SeriesOptionsType } from "highcharts/highstock.src";
 import { escapeHtml, formatAxisNumber, formatTimestamp, formatValue } from "@/lib/format";
 
 export type SeriesColorRole =
@@ -93,8 +93,6 @@ export interface ChartTokens {
 
 export interface BuildOptions {
   readonly reducedMotion?: boolean;
-  /** Called with the hovered x (null when the pointer leaves) and the chart it happened in, e.g. to sync other charts. */
-  readonly onHover?: (x: number | null, chart: Chart) => void;
 }
 
 /** Highcharts wants [x, y] tuples for large arrays (objects are slow past ~1,000 points). */
@@ -303,22 +301,6 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
           states: { hover: { radius: 5, lineWidth: 2, lineColor: tokens.surface } },
         },
         dataGrouping: { enabled: true, groupPixelWidth: 2 },
-        point: options.onHover
-          ? {
-              events: {
-                mouseOver() {
-                  options.onHover?.(this.x, this.series.chart);
-                },
-              },
-            }
-          : undefined,
-        events: options.onHover
-          ? {
-              mouseOut() {
-                options.onHover?.(null, this.chart);
-              },
-            }
-          : undefined,
       },
     },
     series: spec.series.map((s) => seriesOptions(s, tokens)),

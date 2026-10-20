@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { buildChartOptions, toPoints, type ChartSeriesSpec, type ChartSpec, type ChartTokens } from "./chart-options";
 
 const TOKENS: ChartTokens = {
@@ -173,21 +173,6 @@ describe("buildChartOptions", () => {
       keyboardNavigation: { enabled: true },
     });
     expect(get(options, "lang", "accessibility", "chartContainerLabel")).toBe("Price");
-  });
-
-  it("reports hover with the source chart, and nothing when no listener is given", () => {
-    const onHover = vi.fn();
-    const options = buildChartOptions(spec(), TOKENS, { onHover });
-    const chart = { id: "source" };
-    (get(options, "plotOptions", "series", "point", "events", "mouseOver") as (this: unknown) => void).call({
-      x: 42,
-      series: { chart },
-    });
-    expect(onHover).toHaveBeenLastCalledWith(42, chart);
-    (get(options, "plotOptions", "series", "events", "mouseOut") as (this: unknown) => void).call({ chart });
-    expect(onHover).toHaveBeenLastCalledWith(null, chart);
-
-    expect(get(buildChartOptions(spec(), TOKENS), "plotOptions", "series", "point")).toBeUndefined();
   });
 
   it("disables animation when the user prefers reduced motion", () => {
