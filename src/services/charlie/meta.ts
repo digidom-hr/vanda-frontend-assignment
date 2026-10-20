@@ -1,4 +1,4 @@
-import type { ServiceMeta } from "../types";
+import type { ServiceMeta } from "@/services/types";
 
 export const charlieMeta = {
   id: "charlie",

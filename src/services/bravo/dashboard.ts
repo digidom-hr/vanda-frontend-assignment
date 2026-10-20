@@ -1,5 +1,5 @@
-import { flowChart, signedLineChart } from "@/components/charts/presets";
-import { fieldPanel, primaryPanel, type DashboardConfig } from "@/components/dashboard/panels";
+import { flowChart, signedLineChart } from "@/features/charts/presets";
+import { fieldPanel, primaryPanel, type DashboardConfig } from "@/features/dashboard/panels";
 import { cumulative } from "@/lib/transforms/transforms";
 
 /**

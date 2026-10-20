@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ServiceDashboard, ServiceDashboardSkeleton } from "@/components/dashboard/ServiceDashboard";
-import { PageTransition } from "@/components/shell/PageTransition";
+import { ServiceDashboard, ServiceDashboardSkeleton } from "@/features/dashboard/ServiceDashboard";
+import { PageTransition } from "@/features/shell/PageTransition";
 import { findService, isServiceId, SERVICES } from "@/services/registry";
 
 interface ServicePageProps {

@@ -8,7 +8,7 @@ import {
   valueSchema,
   type ServiceAdapter,
 } from "@/server/adapter-kit";
-import type { SeriesMeta } from "../types";
+import type { SeriesMeta } from "@/services/types";
 import { alphaMeta } from "./meta";
 
 const FIELD_KEYS = alphaMeta.fields.map((f) => f.key);

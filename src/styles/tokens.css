@@ -15,7 +15,7 @@
  *
  * Theming: each colour is declared once with its light and dark value via
  * light-dark(). The active scheme follows the OS unless the user picks one,
- * which sets data-theme="light" | "dark" on <html> (see src/lib/theme.ts).
+ * which sets data-theme="light" | "dark" on <html> (see src/features/shell/theme.ts).
  */
 
 :root {

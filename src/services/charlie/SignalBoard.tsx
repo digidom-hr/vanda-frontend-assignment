@@ -2,9 +2,9 @@
 
 import { useMemo } from "react";
 import { Collection, GridList, GridListHeader, GridListItem, GridListSection, type Key } from "react-aria-components";
-import type { CustomPanelProps } from "@/components/dashboard/panels";
-import { Panel } from "@/components/panel/Panel";
-import { useCharlieLatest } from "@/hooks/useServiceData";
+import type { CustomPanelProps } from "@/features/dashboard/panels";
+import { Panel } from "@/ui/panel/Panel";
+import { useCharlieLatest } from "@/data/useServiceData";
 import { formatFacetValue, formatNumber, formatTimestamp } from "@/lib/format";
 import type { CharlieLatest, CharlieSignal } from "./meta";
 import styles from "./SignalBoard.module.css";

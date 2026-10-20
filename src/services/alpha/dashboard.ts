@@ -1,5 +1,5 @@
-import { flowChart, rankChart, signedLineChart } from "@/components/charts/presets";
-import { fieldPanel, primaryPanel, type DashboardConfig } from "@/components/dashboard/panels";
+import { flowChart, rankChart, signedLineChart } from "@/features/charts/presets";
+import { fieldPanel, primaryPanel, type DashboardConfig } from "@/features/dashboard/panels";
 import { movingAverage } from "@/lib/transforms/transforms";
 
 /** Rank is out of the number of companies in the service. */

@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Jost } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
-import { AriaRouterProvider } from "@/components/providers/AriaRouterProvider";
-import { QueryProvider } from "@/components/providers/QueryProvider";
-import { AppShell } from "@/components/shell/AppShell";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { AriaRouterProvider } from "@/features/shell/providers/AriaRouterProvider";
+import { QueryProvider } from "@/features/shell/providers/QueryProvider";
+import { AppShell } from "@/features/shell/AppShell";
+import { THEME_INIT_SCRIPT } from "@/features/shell/theme";
 import "@/styles/globals.css";
 
 // Vanda's typeface: one variable family covers every weight the app uses.

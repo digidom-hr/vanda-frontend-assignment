@@ -8,7 +8,7 @@ import {
   valueSchema,
   type ServiceAdapter,
 } from "@/server/adapter-kit";
-import type { SeriesMeta } from "../types";
+import type { SeriesMeta } from "@/services/types";
 import { charlieMeta, type CharlieLatest } from "./meta";
 
 const seriesSchema = z.object({
