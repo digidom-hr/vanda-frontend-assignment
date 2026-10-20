@@ -104,11 +104,16 @@ function TourStepCard({
     const first = target.getBoundingClientRect();
     if (first.top < 0 || first.bottom > window.innerHeight) target.scrollIntoView({ block: "center" });
 
+    // The card renders through a portal and may attach a few frames later: keep trying for about half a second.
+    let tries = 30;
+    let frame = 0;
     const position = () => {
-      // The card renders through a portal and may attach a frame later; the next frame places it.
       const light = spotlight.current;
       const panel = card.current;
-      if (!light || !panel) return;
+      if (!light || !panel) {
+        if (tries-- > 0) frame = requestAnimationFrame(position);
+        return;
+      }
       const box = target.getBoundingClientRect();
       const lit = {
         top: box.top - SPOTLIGHT_PAD,
@@ -127,19 +132,27 @@ function TourStepCard({
         { width: panel.offsetWidth, height: panel.offsetHeight },
         { width: window.innerWidth, height: window.innerHeight },
       );
-      Object.assign(panel.style, { top: `${place.top}px`, left: `${place.left}px`, opacity: "1" });
+      Object.assign(panel.style, { top: `${place.top}px`, left: `${place.left}px` });
+      // Shown through an attribute React doesn't own: an inline opacity would be
+      // reset whenever React Aria re-renders the card's style (it does on phones,
+      // after measuring the viewport), leaving the card invisible.
+      panel.dataset.placed = "";
     };
 
     position();
-    let frame = requestAnimationFrame(position);
+    frame = requestAnimationFrame(position);
     const follow = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(position);
     };
+    // The card's size can change after it is placed (fonts, wrapping): place it again.
+    const resized = new ResizeObserver(follow);
+    if (card.current) resized.observe(card.current);
     window.addEventListener("scroll", follow, true);
     window.addEventListener("resize", follow);
     return () => {
       cancelAnimationFrame(frame);
+      resized.disconnect();
       window.removeEventListener("scroll", follow, true);
       window.removeEventListener("resize", follow);
     };
@@ -148,8 +161,8 @@ function TourStepCard({
   return (
     <>
       <div ref={spotlight} className={styles.spotlight} aria-hidden="true" />
-      {/* Transparent, not hidden, until placed: it stays in the accessibility tree. */}
-      <Modal ref={card} className={styles.card} style={{ opacity: 0 }}>
+      {/* Transparent, not hidden, until placed (see the CSS): it stays in the accessibility tree. */}
+      <Modal ref={card} className={styles.card}>
         <Dialog className={styles.dialog} aria-describedby={textId}>
           {/* Announced as the steps change; focus stays on Next. */}
           <div aria-live="polite" aria-atomic="true" className={styles.content}>
