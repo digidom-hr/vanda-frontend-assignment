@@ -32,3 +32,33 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+  e2e:
+    name: End-to-end and accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end tests (builds, starts the mock API and the app)
+        run: npm run test:e2e
+
+      - name: Keep the report, traces and screenshots when tests fail
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
