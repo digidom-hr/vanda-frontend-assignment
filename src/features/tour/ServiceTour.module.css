@@ -20,6 +20,11 @@
     height var(--duration-base) var(--ease-out);
 }
 
+/* Transparent until the tour has placed it next to its element (it sets data-placed). */
+.card:not([data-placed]) {
+  opacity: 0;
+}
+
 .card {
   position: fixed;
   width: min(22rem, calc(100vw - 2rem));

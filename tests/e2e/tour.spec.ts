@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { waitForCharts } from "./helpers";
 
 // A first-time visitor: nothing remembered yet.
@@ -11,6 +11,7 @@ test.describe("onboarding tour @a11y", () => {
     await waitForCharts(page);
     const tour = page.getByRole("dialog", { name: "Search every series" });
     await expect(tour).toBeVisible();
+    await expectShown(tour);
     await expect(tour).toContainText("Step 1 of 6");
     await expect(page.getByRole("button", { name: "Next" })).toBeFocused();
 
@@ -24,6 +25,7 @@ test.describe("onboarding tour @a11y", () => {
     for (const title of titles) {
       await page.keyboard.press("Enter");
       await expect(page.getByRole("dialog", { name: title })).toBeVisible();
+      await expectShown(page.getByRole("dialog", { name: title }));
     }
     await page.getByRole("button", { name: "Done" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -52,3 +54,12 @@ test.describe("onboarding tour @a11y", () => {
     await expect(page.getByRole("dialog", { name: "Search every series" })).toBeVisible();
   });
 });
+
+/**
+ * The step's card is really on screen. Playwright counts a fully transparent
+ * element as visible, and that is how the card failed on iPhones: placed, but
+ * left at opacity 0.
+ */
+async function expectShown(dialog: Locator): Promise<void> {
+  await expect.poll(() => dialog.evaluate((el) => getComputedStyle(el.parentElement!).opacity)).toBe("1");
+}
