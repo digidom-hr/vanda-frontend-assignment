@@ -3,7 +3,7 @@
 import type { HighchartsReactRefObject } from "@highcharts/react/Stock";
 // The same Highcharts instance @highcharts/react/Stock renders with.
 import Highcharts from "highcharts/es-modules/masters/highstock.src.js";
-import { useCallback, useEffect, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import {
   createGestureSession,
   panSpan,
@@ -51,6 +51,9 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
   const [zoomed, setZoomed] = useState<PlotCorner | null>(null);
   const rangeMin = range?.min;
   const rangeMax = range?.max;
+  // Drops a wheel or pinch gesture that is still settling (it ends 250 ms after
+  // its last step), so it can't put the chart's own view back afterwards.
+  const cancelGesture = useRef<() => void>(() => {});
 
   // The page's range wins whenever it changes: re-apply it. Updating the axis
   // options alone isn't enough, because Highcharts keeps a range the chart was
@@ -58,10 +61,12 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
   useEffect(() => {
     const axis = ref.current?.chart?.xAxis[0];
     if (!axis || rangeMin === undefined || rangeMax === undefined) return;
+    cancelGesture.current();
     axis.setExtremes(rangeMin, rangeMax, true, false);
   }, [ref, rangeMin, rangeMax]);
 
   const reset = useCallback(() => {
+    cancelGesture.current();
     const axis = ref.current?.chart?.xAxis[0];
     if (axis && rangeMin !== undefined && rangeMax !== undefined) axis.setExtremes(rangeMin, rangeMax, true, false);
     setZoomed(null);
@@ -99,6 +104,7 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
       },
       (span) => span,
     );
+    cancelGesture.current = session.cancel;
 
     /** What the chart shows now, everything it could show, and the narrowest zoom. */
     const view = () => {
@@ -188,6 +194,7 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
       element.removeEventListener("pointercancel", onPointerUp);
       element.style.cursor = "";
       session.cancel();
+      cancelGesture.current = () => {};
     };
   }, [ref]);
 

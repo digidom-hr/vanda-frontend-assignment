@@ -239,10 +239,13 @@ test.describe("service dashboard", () => {
     expect(await xLabels(flow)).toEqual(flowDates);
     expect(page.url()).not.toContain("from=");
 
-    // A new page range (here from the navigator's keys) brings every chart back in step.
+    // A new page range (here from the navigator's keys) brings every chart back in step,
+    // even while the chart's last swipe is still settling (it ends 250 ms after the last step).
+    await page.mouse.wheel(-100, 0);
     await page.getByRole("slider", { name: "End of period" }).focus();
     await page.keyboard.press("Shift+ArrowLeft");
     await expect(page).toHaveURL(/from=/);
+    await page.waitForTimeout(400); // past the swipe's settle time
     await expect(price.getByRole("button", { name: "Reset zoom" })).toHaveCount(0);
   });
 
