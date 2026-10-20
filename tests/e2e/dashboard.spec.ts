@@ -2,6 +2,18 @@ import { expect, test } from "@playwright/test";
 import { search, waitForCharts } from "./helpers";
 
 test.describe("service dashboard", () => {
+  test("the page ends where its content ends", async ({ page }) => {
+    // Charlie has the longest series list: hidden parts of the list must not stretch the page.
+    await page.setViewportSize({ width: 1440, height: 1300 });
+    await page.goto("/charlie");
+    await waitForCharts(page);
+    const { pageHeight, contentBottom } = await page.evaluate(() => ({
+      pageHeight: document.documentElement.scrollHeight,
+      contentBottom: (document.querySelector("main") as HTMLElement).getBoundingClientRect().bottom + window.scrollY,
+    }));
+    expect(pageHeight).toBeLessThanOrEqual(Math.max(contentBottom, 1300) + 1);
+  });
+
   test("applies a transform, keeps it across a reload, and removes it", async ({ page }) => {
     await page.goto("/alpha?series=A-0004&range=6M");
     await waitForCharts(page);
