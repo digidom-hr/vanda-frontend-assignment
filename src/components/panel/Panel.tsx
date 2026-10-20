@@ -3,12 +3,20 @@
 import { useId, useState, type ReactNode } from "react";
 import type { TableData } from "@/components/charts/chart-table";
 import { SegmentedControl } from "@/components/controls/SegmentedControl";
-import { ApiError } from "@/lib/api-client";
+import { VandaLogo } from "@/components/brand/VandaLogo";
 import { Skeleton } from "@/components/feedback/Skeleton";
+import { ApiError } from "@/lib/api-client";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { DataTable } from "./DataTable";
 import styles from "./Panel.module.css";
 import { PanelErrorBoundary } from "./PanelErrorBoundary";
+
+/**
+ * A chart still loading after this long shows Vanda's mark and "Loading …"
+ * (the pattern in Vanda's own app). Faster loads show only the placeholder,
+ * so nothing flashes; nothing is ever delayed to show it.
+ */
+export const LOADING_LABEL_MS = 300;
 
 /** After this long, a loading panel explains itself (e.g. a data service waking up). */
 export const SLOW_LOAD_MS = 5000;
@@ -93,6 +101,7 @@ export function Panel({
   const headingId = useId();
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const showTable = view === "table" && table !== undefined && status === "success" && !isEmpty;
+  const labelShown = useDelayedFlag(status === "pending" && placeholder === "chart", LOADING_LABEL_MS);
   const slow = useDelayedFlag(explainSlowLoad && status === "pending", SLOW_LOAD_MS);
 
   const failure = (message: string, retry?: () => void) => (
@@ -122,12 +131,15 @@ export function Panel({
         ) : (
           <Skeleton tone="area" className={styles.sweep} />
         )}
-        {slow ? (
+        {/* The same text throughout: hidden at first, shown once the load takes a while. */}
+        <span className={labelShown ? styles.loadingLabel : "visually-hidden"}>
+          {labelShown && <VandaLogo variant="mark" height={14} className={styles.loadingMark} />}
+          Loading {title}
+        </span>
+        {slow && (
           <p className={styles.slow} role="status">
             {SLOW_LOAD_MESSAGE}
           </p>
-        ) : (
-          <span className="visually-hidden">Loading {title}</span>
         )}
       </div>
     );
