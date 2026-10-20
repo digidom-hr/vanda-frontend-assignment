@@ -14,6 +14,55 @@ test.describe("service dashboard", () => {
     expect(pageHeight).toBeLessThanOrEqual(Math.max(contentBottom, 1300) + 1);
   });
 
+  test("crossfades between services and between series", async ({ page }) => {
+    // Record which parts each view transition animates, and with which
+    // animation: ours (vt-rise-in), not the browser's default fade.
+    await page.addInitScript(() => {
+      const log: string[] = [];
+      Object.assign(window, { __viewTransitions: log });
+      const start = document.startViewTransition?.bind(document);
+      if (!start) return;
+      document.startViewTransition = ((update: ViewTransitionUpdateCallback) => {
+        const transition = start(update);
+        void transition.ready.then(() => {
+          const parts = document
+            .getAnimations()
+            .map(
+              (a) => `${(a.effect as KeyframeEffect | null)?.pseudoElement ?? ""}=${(a as CSSAnimation).animationName}`,
+            );
+          log.push(parts.join(" "));
+        });
+        return transition;
+      }) as typeof document.startViewTransition;
+    });
+    const last = () =>
+      page.evaluate(() => (window as unknown as { __viewTransitions: string[] }).__viewTransitions.at(-1));
+
+    await page.goto("/alpha");
+    await waitForCharts(page);
+    await page.getByRole("navigation").getByRole("link", { name: "Bravo" }).click();
+    await expect(page).toHaveURL(/\/bravo/);
+    await expect.poll(last).toContain("::view-transition-new(page)=vt-rise-in");
+    // While a view transition runs, the browser doesn't deliver clicks to the
+    // animating content; wait for it to finish, as a person reading the page would.
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document
+            .getAnimations()
+            .some((a) => (a.effect as KeyframeEffect | null)?.pseudoElement?.startsWith("::view-transition")),
+        ),
+      )
+      .toBe(false);
+
+    await page
+      .getByRole("row", { name: /Europe Retail Activity/ })
+      .first()
+      .click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Europe Retail Activity");
+    await expect.poll(last).toContain("::view-transition-new(series-heading)=vt-rise-in");
+  });
+
   test("applies a transform, keeps it across a reload, and removes it", async ({ page }) => {
     await page.goto("/alpha?series=A-0004&range=6M");
     await waitForCharts(page);

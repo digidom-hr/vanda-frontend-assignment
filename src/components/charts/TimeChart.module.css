@@ -2,6 +2,14 @@
   position: relative;
   min-width: 0;
   transition: opacity var(--duration-base) var(--ease-out);
+  /* The chart arrives in place of its placeholder: a short fade says "your data is here". */
+  animation: chart-in var(--duration-base) var(--ease-out);
+}
+
+@keyframes chart-in {
+  from {
+    opacity: 0;
+  }
 }
 
 /* Refetch keeps the previous frame, dimmed: no skeleton flash, no layout jump. */

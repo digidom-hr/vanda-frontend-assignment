@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, ViewTransition, type ReactNode } from "react";
 import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from "react-aria-components";
 import { ChartSyncProvider } from "@/components/charts/ChartSync";
 import { chartTable } from "@/components/charts/chart-table";
@@ -200,23 +200,26 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
 
       <div className={styles.main}>
         <header className={styles.header}>
-          <div className={styles.heading}>
-            {catalog.isPending ? (
-              <HeadingSkeleton label={service.label} />
-            ) : (
-              <h1 className={styles.title}>{primary?.name ?? service.label}</h1>
-            )}
-            {primary && (
-              <p className={styles.facts}>
-                <span>{primary.id}</span>
-                {primary.facets.map((f) => (
-                  <span key={f.key}>{formatFacetValue(f.value)}</span>
-                ))}
-                <span>{primary.unit}</span>
-                {selection.series.length > 1 && <span>Comparing {selection.series.length} series</span>}
-              </p>
-            )}
-          </div>
+          {/* A new primary series crossfades the title ("same page, different series"); comparing doesn't. */}
+          <ViewTransition key={primary?.id ?? "none"} name="series-heading" share="content-swap" default="none">
+            <div className={styles.heading}>
+              {catalog.isPending ? (
+                <HeadingSkeleton label={service.label} />
+              ) : (
+                <h1 className={styles.title}>{primary?.name ?? service.label}</h1>
+              )}
+              {primary && (
+                <p className={styles.facts}>
+                  <span>{primary.id}</span>
+                  {primary.facets.map((f) => (
+                    <span key={f.key}>{formatFacetValue(f.value)}</span>
+                  ))}
+                  <span>{primary.unit}</span>
+                  {selection.series.length > 1 && <span>Comparing {selection.series.length} series</span>}
+                </p>
+              )}
+            </div>
+          </ViewTransition>
           {pickerProps ? <MobilePicker {...pickerProps} /> : <MobilePickerSkeleton />}
         </header>
 
