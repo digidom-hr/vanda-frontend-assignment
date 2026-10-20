@@ -7,5 +7,5 @@ test-results/
 package-lock.json
 .claude/
 CLAUDE.md
-# Starter brief: left untouched until the docs commit
-README.md
+# The supplied assignment brief, kept word for word
+docs/ASSIGNMENT.md
