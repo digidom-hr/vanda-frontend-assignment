@@ -58,23 +58,36 @@ test.describe("resilience", () => {
 });
 
 test.describe("loading", () => {
-  // Several widths: text wraps differently at each, and placeholders must wrap like the real content.
-  for (const width of [1440, 1420, 1366, 1280, 1024]) {
-    test(`placeholders hold the layout: panels don't move when the data arrives (${width}px)`, async ({ page }) => {
-      await page.setViewportSize({ width, height: 900 });
-      // A slow service: every request answers after a delay.
-      await page.route("**/api/**", async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        await route.continue();
-      });
-      const panelTops = () =>
-        page.locator("main section").evaluateAll((sections) => sections.map((s) => s.getBoundingClientRect().top));
+  // Several widths, and text drawn a little wider (as on another OS or font
+  // renderer): placeholders must take the same space as the real content
+  // however the text happens to render.
+  for (const width of [1440, 1420, 1366, 1120]) {
+    for (const spacing of ["normal", "0.02em"]) {
+      test(`placeholders hold the layout: panels don't move when the data arrives (${width}px, letter-spacing ${spacing})`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.addInitScript((letterSpacing) => {
+          document.addEventListener("DOMContentLoaded", () => {
+            const style = document.createElement("style");
+            style.textContent = `* { letter-spacing: ${letterSpacing} !important; }`;
+            document.head.append(style);
+          });
+        }, spacing);
+        // A slow service: every request answers after a delay.
+        await page.route("**/api/**", async (route) => {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          await route.continue();
+        });
+        const panelTops = () =>
+          page.locator("main section").evaluateAll((sections) => sections.map((s) => s.getBoundingClientRect().top));
 
-      await page.goto("/alpha");
-      await expect(page.getByText("Loading Alpha series")).toBeAttached();
-      const loading = await panelTops();
-      await waitForCharts(page);
-      expect(await panelTops()).toEqual(loading);
-    });
+        await page.goto("/alpha");
+        await expect(page.getByText("Loading Alpha series")).toBeAttached();
+        const loading = await panelTops();
+        await waitForCharts(page);
+        expect(await panelTops()).toEqual(loading);
+      });
+    }
   }
 });
