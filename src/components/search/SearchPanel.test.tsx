@@ -102,6 +102,16 @@ describe("SearchPanel", () => {
     expect(onNavigate).toHaveBeenCalled();
   });
 
+  it("shows placeholder rows while the first results load", async () => {
+    stubApi(() => new Promise<Response>(() => {})); // never answers
+    renderWithProviders(<SearchPanel variant="inline" />);
+    typeInto("acme");
+    expect(await screen.findByRole("status")).toHaveTextContent("Searching");
+    const placeholders = document.querySelectorAll("[data-tone='text']");
+    expect(placeholders.length).toBe(9); // three rows: name, service, details
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
   it("explains an empty result", async () => {
     stubApi(() => respond({ query: "zzqx" }));
     renderWithProviders(<SearchPanel variant="inline" />);

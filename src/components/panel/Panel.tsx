@@ -4,6 +4,7 @@ import { useId, useState, type ReactNode } from "react";
 import type { TableData } from "@/components/charts/chart-table";
 import { SegmentedControl } from "@/components/controls/SegmentedControl";
 import { ApiError } from "@/lib/api-client";
+import { Skeleton } from "@/components/feedback/Skeleton";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { DataTable } from "./DataTable";
 import styles from "./Panel.module.css";
@@ -18,8 +19,8 @@ export const SLOW_LOAD_MESSAGE =
 export interface PanelProps {
   readonly title: string;
   readonly headingLevel?: 2 | 3;
-  /** Short context under the title, e.g. "Daily close, USD". */
-  readonly subtitle?: string;
+  /** Short context under the title, e.g. "Daily close, USD", or its placeholder while loading. */
+  readonly subtitle?: ReactNode;
   /** The current value or summary, right-aligned in the header. */
   readonly readout?: ReactNode;
   /** Controls that belong to this panel (e.g. transform chips). */
@@ -40,12 +41,20 @@ export interface PanelProps {
   readonly explainSlowLoad?: boolean;
   /** Height reserved in every state, so the layout never jumps. */
   readonly bodyHeight: number;
+  /**
+   * What the loading placeholder looks like: an empty chart (default) or rows
+   * of a list. A chart placeholder also holds the place of the Chart/Table switch.
+   */
+  readonly placeholder?: "chart" | "list";
   readonly variant?: "primary" | "secondary";
   readonly className?: string;
   readonly children: ReactNode;
 }
 
 type View = "chart" | "table";
+
+/** Varied widths so the list placeholder reads as rows of text, not a grid of bars. */
+const LIST_PLACEHOLDER_WIDTHS = ["62%", "48%", "70%", "55%", "40%", "66%", "52%", "58%", "44%", "68%", "50%", "60%"];
 
 function errorMessage(error: unknown, title: string): { message: string; retryable: boolean } {
   if (error instanceof ApiError) return { message: error.message, retryable: error.retryable };
@@ -72,6 +81,7 @@ export function Panel({
   table,
   explainSlowLoad = true,
   bodyHeight,
+  placeholder = "chart",
   variant = "secondary",
   className,
   children,
@@ -96,7 +106,19 @@ export function Panel({
   let body: ReactNode;
   if (status === "pending") {
     body = (
-      <div className={styles.loading} aria-busy="true">
+      <div className={styles.loading} data-placeholder={placeholder} aria-busy="true">
+        {placeholder === "list" ? (
+          <div className={styles.listPlaceholder}>
+            {LIST_PLACEHOLDER_WIDTHS.map((width, i) => (
+              <div key={i} className={styles.listRow}>
+                <Skeleton tone="text" width={width} />
+                <Skeleton tone="text" width="2.5rem" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Skeleton tone="area" className={styles.sweep} />
+        )}
         {slow ? (
           <p className={styles.slow} role="status">
             {SLOW_LOAD_MESSAGE}
@@ -135,7 +157,16 @@ export function Panel({
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
         <div className={styles.headerEnd}>
-          {readout && <div className={styles.readout}>{readout}</div>}
+          {readout ? (
+            <div className={styles.readout}>{readout}</div>
+          ) : (
+            status === "pending" && (
+              <div className={styles.readout}>
+                <Skeleton tone="text" width="8rem" />
+              </div>
+            )
+          )}
+          {status === "pending" && placeholder === "chart" && <Skeleton className={styles.viewSwitchPlaceholder} />}
           {table && (
             <SegmentedControl
               label={`${title} view`}

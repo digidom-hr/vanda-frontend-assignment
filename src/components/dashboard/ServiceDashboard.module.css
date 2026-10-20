@@ -17,16 +17,6 @@
   background: var(--color-surface);
 }
 
-.pickerLoading {
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 2.25rem,
-    var(--color-grid) 2.25rem,
-    var(--color-grid) calc(2.25rem + 1px)
-  );
-}
-
 .main {
   display: grid;
   gap: var(--space-4);
@@ -139,6 +129,10 @@
   cursor: pointer;
 }
 
+.changeSeriesPlaceholder {
+  display: none;
+}
+
 .changeSeries[data-focus-visible] {
   box-shadow: var(--focus-ring);
 }
@@ -234,11 +228,20 @@
     display: inline-flex;
     align-items: center;
   }
+
+  .changeSeriesPlaceholder {
+    display: block;
+  }
 }
 
 @media (max-width: 40rem) {
   .layoutSecondary,
   .layoutHalf {
     grid-column: span 12;
+  }
+
+  /* "Change series" on its own row: the header keeps one shape whatever the series name's length. */
+  .header {
+    flex-direction: column;
   }
 }

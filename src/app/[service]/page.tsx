@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ServiceDashboard } from "@/components/dashboard/ServiceDashboard";
+import { ServiceDashboard, ServiceDashboardSkeleton } from "@/components/dashboard/ServiceDashboard";
 import { findService, isServiceId, SERVICES } from "@/services/registry";
-import styles from "./page.module.css";
 
 interface ServicePageProps {
   params: Promise<{ service: string }>;
@@ -28,7 +27,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
   // The dashboard reads its view from the URL's query string, so on this
   // statically generated page it must render inside a Suspense boundary.
   return (
-    <Suspense fallback={<p className={styles.loading}>Loading {findService(id)?.label}</p>}>
+    <Suspense fallback={<ServiceDashboardSkeleton serviceId={id} />}>
       <ServiceDashboard serviceId={id} />
     </Suspense>
   );

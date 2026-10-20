@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { SeriesMeta } from "@/services/types";
 import { stubApi } from "@/test/render";
 import { DASHBOARDS } from "./configs";
-import { ServiceDashboard } from "./ServiceDashboard";
+import { ServiceDashboard, ServiceDashboardSkeleton } from "./ServiceDashboard";
 
 // The chart itself is tested elsewhere; here it only shows what it was given.
 vi.mock("@/components/charts/TimeChart", () => ({
@@ -125,8 +125,8 @@ describe("ServiceDashboard", () => {
 
   it("only offers frequencies every shown series has", async () => {
     setup("?series=A-0001,A-0013");
-    const header = await screen.findByRole("heading", { level: 1 });
-    expect(header).toBeInTheDocument();
+    // Wait for the series, not just the heading: while loading, the service's frequencies are offered.
+    expect(await screen.findByRole("heading", { level: 1, name: "Acme Corp (ACMC)" })).toBeInTheDocument();
     expect(screen.queryByRole("radiogroup", { name: "Frequency" })).not.toBeInTheDocument();
     expect(within(document.body).getAllByText("Daily").length).toBeGreaterThan(0);
   });
@@ -174,5 +174,24 @@ describe("ServiceDashboard", () => {
     );
     expect(await screen.findByText("Loading Price")).toBeInTheDocument();
     expect(screen.getByText("Loading Rank among 40")).toBeInTheDocument();
+    // The picker, title and time rail hold their places too.
+    expect(screen.getByText("Loading Alpha series")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Alpha" })).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "Alpha series" }).querySelector("[data-tone]")).not.toBeNull();
+  });
+
+  it("has a page-shaped placeholder for before the dashboard can render", () => {
+    stubApi(() => new Promise<Response>(() => {})); // never answers
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <ServiceDashboardSkeleton serviceId="charlie" />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByRole("heading", { level: 1, name: "Charlie" })).toBeInTheDocument();
+    expect(screen.getByText("Loading Charlie series")).toBeInTheDocument();
+    // Every panel of the page, in its loading state, including custom ones.
+    expect(screen.getByRole("region", { name: "Score" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Signal board" })).toBeInTheDocument();
   });
 });

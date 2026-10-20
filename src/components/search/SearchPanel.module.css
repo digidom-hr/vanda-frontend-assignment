@@ -235,3 +235,9 @@
   color: var(--color-on-highlighter);
   border-radius: 2px;
 }
+
+/* Placeholder rows reuse the result grid, without the service badge's outline. */
+.placeholderService {
+  grid-area: service;
+  font-size: var(--text-xs);
+}

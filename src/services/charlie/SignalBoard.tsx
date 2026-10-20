@@ -68,6 +68,7 @@ export function SignalBoard({ ctx, onShowSeries, className }: CustomPanelProps) 
       onRetry={() => void latest.refetch()}
       isEmpty={latest.data !== undefined && items.length === 0}
       bodyHeight={560}
+      placeholder="list"
       explainSlowLoad={false}
       className={className}
     >

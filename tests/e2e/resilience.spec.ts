@@ -56,3 +56,21 @@ test.describe("resilience", () => {
     await expect(page.getByRole("listbox", { name: "Search results" }).getByRole("option").first()).toBeVisible();
   });
 });
+
+test.describe("loading", () => {
+  test("placeholders hold the layout: panels don't move when the data arrives", async ({ page }) => {
+    // A slow service: every request answers after a delay.
+    await page.route("**/api/**", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+    const panelTops = () =>
+      page.locator("main section").evaluateAll((sections) => sections.map((s) => s.getBoundingClientRect().top));
+
+    await page.goto("/alpha");
+    await expect(page.getByText("Loading Alpha series")).toBeAttached();
+    const loading = await panelTops();
+    await waitForCharts(page);
+    expect(await panelTops()).toEqual(loading);
+  });
+});

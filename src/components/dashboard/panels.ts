@@ -44,6 +44,8 @@ export interface ChartPanelDefinition extends PanelBase {
   readonly kind?: "chart";
   readonly bodyHeight: number;
   readonly subtitle?: (ctx: PanelContext) => string;
+  /** The subtitle when it doesn't depend on the context: shown while the data loads, instead of a placeholder. */
+  readonly staticSubtitle?: string;
   /** The chart for the current context, or null when this panel has nothing to show. */
   readonly build: (ctx: PanelContext) => ChartSpec | null;
 }
@@ -196,6 +198,7 @@ export function fieldPanel(options: {
     layout: options.layout ?? "secondary",
     bodyHeight,
     subtitle: options.subtitle ? () => options.subtitle as string : undefined,
+    staticSubtitle: options.subtitle,
     build: (ctx) => {
       const primary = ctx.series[0];
       const columns = primary ? ctx.columns.get(primary.id) : undefined;

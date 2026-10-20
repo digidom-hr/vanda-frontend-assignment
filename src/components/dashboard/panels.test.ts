@@ -90,6 +90,7 @@ describe("fieldPanel", () => {
     expect(spec).toMatchObject({ title: "Net", unit: "USD", height: 180, intraday: false, range: { min: 2, max: 4 } });
     expect(spec?.series.map((s) => [s.id, s.values])).toEqual([["A:price", [10, 20, 30, 40]]]);
     expect(net.subtitle?.(ctx())).toBe("Buy minus sell");
+    expect(net.staticSubtitle).toBe("Buy minus sell"); // known before any data loads
   });
 
   it("returns nothing without data for the primary series", () => {
