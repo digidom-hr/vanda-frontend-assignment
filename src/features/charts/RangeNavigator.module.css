@@ -59,12 +59,16 @@
   box-shadow: var(--focus-ring);
 }
 
-/* The period on the left; on pointer devices, the gesture hint on the right (it wraps below when narrow). */
+/*
+ * The period, then (on pointer devices) the gesture hint on its own line.
+ * Not side by side: whether the two fit on one line depended on how wide the
+ * text renders, which differs between machines, so the loading placeholder
+ * (a fixed-width bar for the period) and the loaded caption could wrap
+ * differently and move the panels below.
+ */
 .footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0 var(--space-4);
+  display: grid;
+  justify-items: start;
 }
 
 .caption,
