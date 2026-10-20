@@ -171,6 +171,13 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
       // extend (see xAxis.labels.overflow).
       spacing: [12, 24, 4, 0],
       animation,
+      // One range for the whole page: the navigator and the presets set it and
+      // every chart follows. Highcharts Stock lets each chart zoom (wheel,
+      // pinch) and pan (drag) on its own by default, which left a chart out of
+      // step with the page, and a wheel over a chart zoomed it instead of
+      // scrolling the page.
+      zooming: { mouseWheel: { enabled: false }, pinchType: undefined },
+      panning: { enabled: false },
     },
     accessibility: {
       enabled: true,

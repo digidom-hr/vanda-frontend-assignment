@@ -148,6 +148,12 @@ describe("buildChartOptions", () => {
     ]);
   });
 
+  it("doesn't let a chart zoom or pan on its own, so it can't drift from the page's range", () => {
+    const options = buildChartOptions(spec(), TOKENS);
+    expect(options.chart?.zooming?.mouseWheel).toMatchObject({ enabled: false });
+    expect(options.chart?.panning).toMatchObject({ enabled: false });
+  });
+
   it("uses an ordinal x-axis for intraday data only", () => {
     expect(get(buildChartOptions(spec({ intraday: true }), TOKENS), "xAxis", "ordinal")).toBe(true);
     expect(get(buildChartOptions(spec(), TOKENS), "xAxis", "ordinal")).toBe(false);
