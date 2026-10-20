@@ -93,15 +93,15 @@ Then add one entry each to the registry, `ADAPTERS` and `DASHBOARDS`. Those maps
 
 ### Large, slow or unavailable data
 
-- **Large.** Five-minute data is requested only for the visible window, and only the fields each panel draws. A response budget returns a clear "choose a shorter range" message instead of an oversized payload. One notice per page offers a one-click fix.
+- **Large.** Five-minute data is requested only for the visible window, and only the fields each panel draws. Each response stays under a size budget (about 3 MB, below Vercel's 4.5 MB limit); a longer period, up to the full five years, loads as several date windows in parallel that the browser joins, so every period can be shown. The budget's "choose a shorter range" message remains as a safety net.
 - **Slow.** Placeholders in the shape of the content show while it loads, and the page doesn't move when the data arrives (checked by an end-to-end test). Requests time out and retry with backoff, on the server and again in the browser. Previous data stays on screen, dimmed, while new data loads. After five seconds, the page explains the wait.
 - **Unavailable.** Each panel fails on its own, with a Retry button. Search still returns the services that answered and names the one that didn't. The server keeps serving the last good catalog during an outage. Errors are never cached.
 
 ## Quality
 
 - **Tests:**
-  - 443 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
-  - 52 end-to-end tests (Playwright) against the real app and the unchanged mock API, on desktop and phone sizes, including simulated outages and slow loads;
+  - 451 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
+  - 53 end-to-end tests (Playwright) against the real app and the unchanged mock API, on desktop and phone sizes, including simulated outages and slow loads;
   - axe accessibility audits of every page in light and dark mode.
 - **CI:** GitHub Actions runs `verify` and the end-to-end suite on every pull request and on `main`.
 - **Accessibility:**
