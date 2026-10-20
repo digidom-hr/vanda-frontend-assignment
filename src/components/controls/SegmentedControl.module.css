@@ -35,9 +35,18 @@
   color: var(--color-ink);
 }
 
+/* Selected: a Vanda-purple fill, like the active period in Vanda's filters. */
 .option[data-selected] {
-  background: var(--color-ink);
-  color: var(--color-on-ink);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.group[data-tone="neutral"] .option[data-selected] {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow:
+    0 0 0 1px var(--color-rule),
+    0 1px 2px var(--color-shadow);
 }
 
 .option[data-disabled] {
@@ -45,7 +54,8 @@
   cursor: not-allowed;
 }
 
-.option[data-focus-visible] {
+/* As specific as the neutral selected style (0,4,0) and after it, so focus always wins. */
+.group[data-tone] .option[data-focus-visible] {
   box-shadow: var(--focus-ring);
 }
 

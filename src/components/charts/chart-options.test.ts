@@ -7,8 +7,8 @@ const TOKENS: ChartTokens = {
   graphite: "rgb(91, 100, 114)",
   rule: "rgb(211, 220, 214)",
   grid: "rgb(227, 233, 229)",
-  highlighter: "rgb(242, 209, 58)",
-  highlighterWash: "rgba(242, 209, 58, 0.55)",
+  accent: "rgb(99, 25, 161)",
+  accentWash: "rgba(99, 25, 161, 0.12)",
   fontFamily: "Archivo",
   colors: {
     "series-1": "#2a78d6",

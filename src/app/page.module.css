@@ -12,7 +12,6 @@
 
 .title {
   font-size: var(--text-xl);
-  font-stretch: var(--font-width-expanded);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-title);
 }
@@ -43,7 +42,6 @@
 
 .serviceLink {
   font-size: var(--text-lg);
-  font-stretch: var(--font-width-expanded);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-title);
   text-decoration: none;

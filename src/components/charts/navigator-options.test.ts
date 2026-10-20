@@ -8,8 +8,8 @@ const TOKENS = {
   graphite: "rgb(91, 100, 114)",
   rule: "rgb(211, 220, 214)",
   grid: "rgb(227, 233, 229)",
-  highlighter: "rgb(242, 209, 58)",
-  highlighterWash: "rgba(242, 209, 58, 0.55)",
+  accent: "rgb(99, 25, 161)",
+  accentWash: "rgba(99, 25, 161, 0.12)",
   fontFamily: "Archivo",
   colors: {},
 } as unknown as ChartTokens;
@@ -29,9 +29,9 @@ describe("buildNavigatorOptions", () => {
     });
   });
 
-  it("marks the selected period with the highlighter, in the design's colours", () => {
+  it("marks the selected period with the accent wash, in the design's colours", () => {
     const options = buildNavigatorOptions(spec, TOKENS);
-    expect(options.maskFill).toBe(TOKENS.highlighterWash);
+    expect(options.maskFill).toBe(TOKENS.accentWash);
     expect(options.handles).toMatchObject({ backgroundColor: TOKENS.surface, borderColor: TOKENS.ink });
     expect(options.outlineColor).toBe(TOKENS.rule);
   });

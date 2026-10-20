@@ -174,6 +174,7 @@ export function Panel({
             <SegmentedControl
               label={`${title} view`}
               size="small"
+              tone="neutral"
               value={view}
               onChange={setView}
               options={[

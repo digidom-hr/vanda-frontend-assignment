@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo } from "next/font/google";
+import { Jost } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
 import { AriaRouterProvider } from "@/components/providers/AriaRouterProvider";
@@ -8,11 +8,10 @@ import { AppShell } from "@/components/shell/AppShell";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "@/styles/globals.css";
 
-// One variable family; the width axis provides the expanded/condensed styles.
-const archivo = Archivo({
+// Vanda's typeface: one variable family covers every weight the app uses.
+const jost = Jost({
   subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-archivo",
+  variable: "--font-jost",
   display: "swap",
 });
 
@@ -28,14 +27,14 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#222927" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c1824" },
   ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     // The init script may set data-theme before React hydrates.
-    <html lang="en" className={archivo.variable} suppressHydrationWarning>
+    <html lang="en" className={jost.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

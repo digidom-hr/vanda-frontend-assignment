@@ -39,7 +39,6 @@
 
 .title {
   font-size: var(--text-lg);
-  font-stretch: var(--font-width-expanded);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-title);
 }
@@ -59,7 +58,7 @@
   justify-content: space-between;
   gap: var(--space-2) var(--space-4);
   padding: var(--space-2) var(--space-3);
-  border-left: 3px solid var(--color-highlighter);
+  border-left: 3px solid var(--color-accent);
   background: var(--color-surface);
   font-size: var(--text-sm);
 }
@@ -187,7 +186,6 @@
 .statusTitle {
   color: var(--color-ink);
   font-size: var(--text-lg);
-  font-stretch: var(--font-width-expanded);
   font-weight: var(--weight-title);
 }
 
@@ -197,10 +195,14 @@
   padding: 0 var(--space-4);
   border: 0;
   border-radius: var(--radius-control);
-  background: var(--color-ink);
-  color: var(--color-on-ink);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font-weight: var(--weight-semibold);
   cursor: pointer;
+}
+
+.retry:hover {
+  background: var(--color-accent-hover);
 }
 
 @media (max-width: 75rem) {

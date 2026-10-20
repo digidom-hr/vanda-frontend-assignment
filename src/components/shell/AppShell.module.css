@@ -5,8 +5,8 @@
   z-index: var(--z-overlay);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-control);
-  background: var(--color-ink);
-  color: var(--color-on-ink);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font-weight: var(--weight-semibold);
   text-decoration: none;
   transform: translateY(-200%);
@@ -49,7 +49,6 @@
 .wordmark {
   grid-area: wordmark;
   font-size: var(--text-md);
-  font-stretch: var(--font-width-expanded);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-title);
   text-decoration: none;

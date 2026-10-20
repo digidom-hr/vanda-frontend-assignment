@@ -40,8 +40,8 @@ export function resolveChartTokens(root: HTMLElement = document.documentElement)
       graphite: read("--color-graphite"),
       rule: read("--color-rule"),
       grid: read("--color-grid"),
-      highlighter: read("--color-highlighter"),
-      highlighterWash: read("--color-highlighter-wash"),
+      accent: read("--color-accent"),
+      accentWash: read("--color-accent-wash"),
       fontFamily: getComputedStyle(document.body).fontFamily,
       colors,
     };

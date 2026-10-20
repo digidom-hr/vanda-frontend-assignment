@@ -6,10 +6,12 @@
  * reference these custom properties, so changing the look means changing this
  * file.
  *
- * Direction: "graph paper and highlighter". Ink on a faint green-grey paper
- * for all chrome; the highlighter yellow is the only accent and is used as a
- * fill (selected time range, search matches, focus halo), never as text.
- * Data colours are defined separately for charts.
+ * Direction: Vanda (vanda.com and the Vanda Analytics product). Ink on a
+ * lavender-grey page with white panels and Jost type; Vanda purple is the
+ * one accent and marks what is selected, active or focused, and primary
+ * actions. Values come from Vanda's own CSS variables where they exist
+ * (--vanda-page, --vanda-ink-900, --vanda-purple, ...). Data colours are
+ * defined separately for charts.
  *
  * Theming: each colour is declared once with its light and dark value via
  * light-dark(). The active scheme follows the OS unless the user picks one,
@@ -19,39 +21,47 @@
 :root {
   color-scheme: light dark;
 
-  /* Colour: surfaces */
-  --color-paper: light-dark(#eff3f0, #1a201e); /* app background */
-  --color-surface: light-dark(#ffffff, #222927); /* panels, inputs, header */
-  --color-surface-hover: light-dark(#f4f7f5, #29312e); /* hovered rows and options */
+  /*
+   * Colour: surfaces. Light values are Vanda's (page #f1f0f5, cards #fff).
+   * Dark is ours: Vanda's site goes deep purple (#1a0829) for marketing
+   * sections; for long analysis sessions a violet-tinted near-neutral is calmer.
+   */
+  --color-paper: light-dark(#f1f0f5, #14111a); /* app background */
+  --color-surface: light-dark(#ffffff, #1c1824); /* panels, inputs, header */
+  --color-surface-hover: light-dark(#f7f5fb, #25202f); /* hovered rows and options */
 
   /* Colour: text and lines */
-  --color-ink: light-dark(#1b2331, #e4eae6); /* primary text, focus ring, selected state */
-  --color-on-ink: light-dark(#eff3f0, #1a201e); /* text on ink-filled controls */
-  --color-graphite: light-dark(#5b6472, #9aa6a0); /* secondary text, axis labels */
-  --color-rule: light-dark(#d3dcd6, #36403c); /* borders */
-  --color-grid: light-dark(#e3e9e5, #2c3431); /* chart gridlines */
+  --color-ink: light-dark(#241f2b, #f4f2f7); /* primary text (Vanda ink-900) */
+  --color-on-ink: light-dark(#ffffff, #14111a); /* text on ink-filled controls */
+  --color-graphite: light-dark(#595959, #a8a3b3); /* secondary text, axis labels (Vanda ink-500) */
+  --color-rule: light-dark(#d6d3db, #353041); /* borders (Vanda rule-strong) */
+  --color-grid: light-dark(#e7e5ea, #2a2533); /* chart gridlines (Vanda rule) */
 
   /* Colour: loading placeholders. One sweep crosses every placeholder on the page at once. */
-  --color-skeleton: light-dark(#e6ece8, #2c3431); /* placeholder shapes */
+  --color-skeleton: light-dark(#e9e7ee, #2a2533); /* placeholder shapes */
   --color-skeleton-sheen: light-dark(rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.07)); /* the sweep over shapes */
-  --color-skeleton-sweep: light-dark(rgb(27 35 49 / 0.05), rgb(255 255 255 / 0.04)); /* the sweep over empty areas */
+  --color-skeleton-sweep: light-dark(rgb(36 31 43 / 0.05), rgb(255 255 255 / 0.04)); /* the sweep over empty areas */
 
-  /* Colour: the one accent */
-  --color-highlighter: light-dark(#f2d13a, #e8c531);
-  --color-on-highlighter: #1b2331; /* text on the highlighter, in both themes */
-  --color-highlighter-wash: light-dark(rgb(242 209 58 / 0.55), rgb(232 197 49 / 0.38));
+  /*
+   * Colour: the one accent, Vanda purple (#6319a1; in dark mode the logo's
+   * lilac #c39bec). Selected, active and focused states, and primary actions.
+   */
+  --color-accent: light-dark(#6319a1, #c39bec);
+  --color-accent-hover: light-dark(#7a24bc, #d2b3f1); /* Vanda violet-hover */
+  --color-on-accent: light-dark(#ffffff, #1a0829); /* text on accent fills */
+  --color-accent-wash: light-dark(rgb(99 25 161 / 0.12), rgb(195 155 236 / 0.2)); /* selected period, matches */
 
   /* Colour: status */
   --color-danger: light-dark(#a3261b, #ff9a8b);
   --color-danger-wash: light-dark(#fbe9e6, #3a2422);
-  --color-shadow: light-dark(rgb(27 35 49 / 0.16), rgb(0 0 0 / 0.5));
+  --color-shadow: light-dark(rgb(36 31 43 / 0.14), rgb(0 0 0 / 0.5));
 
   /*
    * Colour: data. Validated with the dataviz palette validator against the
    * chart surfaces (light #ffffff, dark #222927): every adjacent pair is
    * distinguishable under protanopia/deuteranopia (worst ΔE 9.2 light /
    * 9.4 dark, target 8), and slots 1-3 are distinguishable as any pair.
-   * Yellow is excluded: it is the highlighter (selection), never a series.
+   * (Palette slots are revised for Vanda in the charts commit.)
    * Light slots 3 and 6 are under 3:1 on white, so charts always pair colour
    * with a legend, tooltips and a table view. Assign slots in order; a
    * series keeps its slot when others are added or removed.
@@ -73,12 +83,12 @@
   --color-signal-mid: var(--color-neutral);
   --color-signal-low: var(--color-negative);
 
-  /* Type: one family, hierarchy through width and weight */
-  --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
-  --font-width-expanded: 125%; /* page and series titles */
-  --font-width-normal: 100%; /* interface text */
-  --font-width-condensed: 87.5%; /* dense lists */
-  --font-width-narrow: 75%; /* axis labels */
+  /*
+   * Type: Jost, Vanda's typeface, one family; hierarchy through size and
+   * weight. Body text is 400 (Vanda's site uses 300, too light for dense
+   * figures at 12-14px). Jost has tabular figures, which the app uses.
+   */
+  --font-sans: var(--font-jost), "Helvetica Neue", Arial, sans-serif;
 
   --text-xs: 0.75rem; /* 12px */
   --text-sm: 0.8125rem; /* 13px */
@@ -89,12 +99,12 @@
 
   --leading-tight: 1.2;
   --leading-base: 1.45;
-  --tracking-title: -0.01em;
+  --tracking-title: -0.02em; /* Vanda's headings run slightly tight */
 
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
-  --weight-title: 640;
+  --weight-title: 600;
   --weight-bold: 700;
 
   /* Space: 4px steps */
@@ -124,8 +134,8 @@
   /* Elevation: only for layers that float above the page */
   --shadow-float: 0 8px 28px var(--color-shadow), 0 1px 3px var(--color-shadow);
 
-  /* Focus: ink ring with a highlighter halo, visible on any background */
-  --focus-ring: 0 0 0 2px var(--color-ink), 0 0 0 5px var(--color-highlighter);
+  /* Focus: a purple ring (Vanda's --ring) with a surface gap, visible on any background and on purple fills */
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-accent);
 
   /* Motion */
   --duration-fast: 120ms;

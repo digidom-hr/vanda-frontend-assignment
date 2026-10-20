@@ -87,6 +87,7 @@ export function ThemeToggle() {
   return (
     <SegmentedControl
       label="Theme"
+      tone="neutral"
       value={preference}
       onChange={setPreference}
       options={OPTIONS.map((option) => ({ id: option.id, label: option.icon, ariaLabel: option.label }))}
