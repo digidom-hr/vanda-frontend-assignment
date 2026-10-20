@@ -37,6 +37,13 @@
   --color-rule: light-dark(#d6d3db, #353041); /* borders (Vanda rule-strong) */
   --color-grid: light-dark(#e7e5ea, #2a2533); /* chart gridlines (Vanda rule) */
 
+  /*
+   * Colour: the backdrop behind dialogs (search, the phone series sheet). It
+   * dims the page in both themes: built from the ink colour it would turn
+   * light in dark mode and wash the page out instead.
+   */
+  --color-scrim: light-dark(rgb(36 31 43 / 0.28), rgb(0 0 0 / 0.6));
+
   /* Colour: loading placeholders. One sweep crosses every placeholder on the page at once. */
   --color-skeleton: light-dark(#e9e7ee, #2a2533); /* placeholder shapes */
   --color-skeleton-sheen: light-dark(rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.07)); /* the sweep over shapes */
