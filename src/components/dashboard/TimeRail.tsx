@@ -161,8 +161,6 @@ export function TimeRail({ t, values, range, onCommit, label = "Time range" }: T
     }
     if (next) {
       event.preventDefault();
-      // The handles sit inside the period slider: don't let a handled key move the period too.
-      event.stopPropagation();
       commit(next);
     }
   };
@@ -198,6 +196,7 @@ export function TimeRail({ t, values, range, onCommit, label = "Time range" }: T
           {path && <path d={path} className={styles.line} />}
         </svg>
 
+        {/* Window and handles are siblings: interactive controls must not be nested (WCAG). */}
         <div
           className={styles.window}
           style={{ left: `${pct(shown.start)}%`, width: `${Math.max(0.4, pct(shown.end) - pct(shown.start))}%` }}
@@ -210,34 +209,33 @@ export function TimeRail({ t, values, range, onCommit, label = "Time range" }: T
           aria-valuenow={shown.start}
           aria-valuetext={periodText}
           onKeyDown={keyHandler("move")}
-        >
-          <div
-            className={styles.handle}
-            data-edge="start"
-            data-mode="start"
-            role="slider"
-            tabIndex={0}
-            aria-label="Start of period"
-            aria-valuemin={0}
-            aria-valuemax={last}
-            aria-valuenow={shown.start}
-            aria-valuetext={date(shown.start)}
-            onKeyDown={keyHandler("start")}
-          />
-          <div
-            className={styles.handle}
-            data-edge="end"
-            data-mode="end"
-            role="slider"
-            tabIndex={0}
-            aria-label="End of period"
-            aria-valuemin={0}
-            aria-valuemax={last}
-            aria-valuenow={shown.end}
-            aria-valuetext={date(shown.end)}
-            onKeyDown={keyHandler("end")}
-          />
-        </div>
+        />
+        <div
+          className={styles.handle}
+          style={{ left: `${pct(shown.start)}%` }}
+          data-mode="start"
+          role="slider"
+          tabIndex={0}
+          aria-label="Start of period"
+          aria-valuemin={0}
+          aria-valuemax={last}
+          aria-valuenow={shown.start}
+          aria-valuetext={date(shown.start)}
+          onKeyDown={keyHandler("start")}
+        />
+        <div
+          className={styles.handle}
+          style={{ left: `${pct(shown.end)}%` }}
+          data-mode="end"
+          role="slider"
+          tabIndex={0}
+          aria-label="End of period"
+          aria-valuemin={0}
+          aria-valuemax={last}
+          aria-valuenow={shown.end}
+          aria-valuetext={date(shown.end)}
+          onKeyDown={keyHandler("end")}
+        />
       </div>
       <p className={styles.caption} aria-live="polite">
         {periodText}, {points.toLocaleString("en-US")} data points
