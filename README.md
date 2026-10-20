@@ -29,7 +29,7 @@ The app reads the API's address from `MOCK_API_URL` (default `http://localhost:4
 ## What's in it
 
 - **A home page** with search up front and the three services as cards, each with a live preview of its data and counts from its catalog.
-- **One route per service:** `/alpha`, `/bravo`, `/charlie`. Each page has a series picker, frequency and range controls, a Highcharts navigator under the main chart that sets the period for every panel (drag it or scroll over it to zoom; dragging, pinching or Ctrl + scrolling a chart zooms or pans just that chart, with a Reset zoom button), a "Link hover" switch to mark the hovered date in every chart, and the panels that suit that service's data:
+- **One route per service:** `/alpha`, `/bravo`, `/charlie`. Each page has a series picker, frequency and range controls, a Highcharts navigator under the main chart that sets the period for every panel (drag it or scroll over it to zoom; dragging, pinching or Ctrl/⌘ + scrolling a chart zooms or pans just that chart, with a Reset zoom button; a plain scroll keeps scrolling the page and shows how to zoom), a "Link hover" switch to mark the hovered date in every chart, and the panels that suit that service's data:
   - **Alpha (equities):** price, net order flow, score, momentum, and rank among the 40 companies.
   - **Bravo (investor flows):** net flow, gross flow, cumulative net flow, and net as a share of gross. USD and basis-point series never share an axis.
   - **Charlie (composite scores):** the score with labelled high and low thresholds, plus a signal board of every series' latest reading, grouped by category.

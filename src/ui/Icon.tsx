@@ -27,6 +27,14 @@ const SHAPES = {
       <circle cx="11" cy="11" r="8" />
     </>
   ),
+  "zoom-in": (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.34-4.34" />
+      <path d="M11 8v6" />
+      <path d="M8 11h6" />
+    </>
+  ),
   x: (
     <>
       <path d="M18 6 6 18" />

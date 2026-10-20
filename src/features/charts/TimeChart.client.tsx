@@ -12,6 +12,12 @@ import type { TimeChartProps } from "./TimeChart";
 import styles from "./TimeChart.module.css";
 import { useChartRange } from "./useChartRange";
 
+/** How to zoom a chart, in the keys this computer uses (Macs: ⌘, and usually a trackpad). */
+const ZOOM_HINT =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
+    ? "Pinch, or hold ⌘ while scrolling, to zoom"
+    : "Hold Ctrl while scrolling to zoom";
+
 /** The Highcharts-backed chart. Loaded lazily and only in the browser; use `TimeChart`. */
 export default function TimeChartClient({ spec }: TimeChartProps) {
   const tokens = useChartTokens();
@@ -36,11 +42,18 @@ export default function TimeChartClient({ spec }: TimeChartProps) {
   );
 
   // The page's range, unless this chart was zoomed or panned on its own.
-  const { zoomed, reset } = useChartRange(ref, spec.range);
+  const { zoomed, reset, wheelHint } = useChartRange(ref, spec.range);
 
   return (
     <>
       <StockChart ref={ref} options={options} containerProps={{ className: styles.container }} />
+      {/* A pointer-only hint (screen readers don't scroll a chart); the page keeps scrolling under it. */}
+      {wheelHint && (
+        <p className={styles.wheelHint} aria-hidden="true">
+          <Icon name="zoom-in" size={14} />
+          {ZOOM_HINT}
+        </p>
+      )}
       {zoomed && (
         <button
           type="button"

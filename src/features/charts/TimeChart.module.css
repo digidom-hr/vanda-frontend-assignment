@@ -59,3 +59,43 @@
   outline: none;
   box-shadow: var(--focus-ring);
 }
+
+/* After a plain scroll over a chart: how to zoom it, centred on the chart, gone a moment later. */
+.wheelHint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  /* One line where it fits; wraps inside a narrow panel instead of spilling out. */
+  width: max-content;
+  max-width: calc(100% - var(--space-8));
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: hint-in var(--duration-base) var(--ease-out);
+}
+
+.wheelHint svg {
+  color: var(--color-accent);
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 4px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheelHint {
+    animation: none;
+  }
+}
