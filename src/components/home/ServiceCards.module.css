@@ -1,12 +1,12 @@
 .section {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 .heading {
   display: grid;
   justify-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   text-align: center;
 }
 
@@ -34,6 +34,8 @@
 
 .card {
   position: relative;
+  /* Keeps the link's click layer (z-index below) inside the card. */
+  isolation: isolate;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
   gap: var(--space-3);
@@ -72,10 +74,15 @@
   outline: none;
 }
 
-/* The whole card is the click target; the link stays its accessible name. */
+/*
+ * The whole card is the click target, the mini chart included (its
+ * positioned box would otherwise sit above this layer); the link stays the
+ * card's accessible name.
+ */
 .link::after {
   content: "";
   position: absolute;
+  z-index: 1;
   inset: 0;
   border-radius: var(--radius-panel);
 }

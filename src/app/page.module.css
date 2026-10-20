@@ -1,6 +1,6 @@
 .home {
   display: grid;
-  gap: var(--space-10);
+  gap: var(--space-12);
 }
 
 /*
@@ -55,7 +55,7 @@
 /* Everything below the hero: one centred column. */
 .content {
   display: grid;
-  gap: var(--space-12);
+  gap: var(--space-16);
   width: 100%;
   max-width: 72rem;
   margin-inline: auto;
@@ -63,7 +63,7 @@
 
 .features {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 .sectionTitle {
