@@ -32,6 +32,13 @@
 }
 
 .list {
+  /*
+   * Positioned so the checkboxes' visually hidden inputs (absolutely
+   * positioned) are contained by this scroller. Otherwise their containing
+   * block is the sticky sidebar, the scroller doesn't clip them, and rows
+   * scrolled out of view stretch the page with empty space below it.
+   */
+  position: relative;
   overflow-y: auto;
   min-height: 0;
   outline: none;
