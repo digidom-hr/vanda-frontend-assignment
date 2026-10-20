@@ -22,9 +22,39 @@
   box-shadow: 0 0 0 3px var(--color-accent-wash);
 }
 
-.panel[data-variant="inline"] .field {
+.panel[data-variant="inline"] .field,
+.panel[data-variant="hero"] .field {
   min-height: 3.25rem;
   font-size: var(--text-md);
+}
+
+/*
+ * On the home page's dark band: idle hints and messages outside the results
+ * use the band's text colours; the field and the results keep their surface.
+ */
+/* A faint light edge: invisible on the white light-mode field, it outlines the dark one. */
+.panel[data-variant="hero"] .field {
+  border-color: var(--color-on-hero-rule);
+}
+
+.panel[data-variant="hero"] .idle,
+.panel[data-variant="hero"] > .status {
+  color: var(--color-on-hero-muted);
+}
+
+.panel[data-variant="hero"] .examples {
+  justify-content: center;
+}
+
+.panel[data-variant="hero"] .example {
+  border-color: var(--color-on-hero-rule);
+  background: transparent;
+  color: var(--color-on-hero);
+}
+
+.panel[data-variant="hero"] .example:hover {
+  border-color: var(--color-on-hero);
+  background: var(--color-on-hero-wash);
 }
 
 .icon {

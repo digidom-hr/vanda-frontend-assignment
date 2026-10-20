@@ -1,90 +1,130 @@
 .home {
   display: grid;
   gap: var(--space-10);
-  max-width: 56rem;
 }
 
-.intro {
+/*
+ * The hero: a band of Vanda's deep purple across the full width, directly
+ * under the header. The band is drawn by ::before so it can reach the
+ * viewport edges while the content stays in the page's column.
+ */
+.hero {
+  position: relative;
+  isolation: isolate;
+  margin-top: calc(-1 * var(--space-6));
+  padding-block: var(--space-12) var(--space-10);
+  color: var(--color-on-hero);
+  text-align: center;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 calc(50% - 50vw);
+  background: radial-gradient(55% 140% at 50% 0%, var(--color-hero-glow), transparent 70%), var(--color-hero);
+}
+
+.heroInner {
   display: grid;
-  gap: var(--space-2);
-  padding-top: var(--space-6);
+  gap: var(--space-4);
+  max-width: 44rem;
+  margin-inline: auto;
 }
 
 .title {
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-title);
+  line-height: var(--leading-tight);
 }
 
 .lede {
   max-width: 60ch;
-  color: var(--color-graphite);
+  margin-inline: auto;
+  margin-bottom: var(--space-2);
+  color: var(--color-on-hero-muted);
   font-size: var(--text-md);
 }
 
-.sectionTitle {
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--color-rule);
+/* Search results are left-aligned lists, even inside the centred hero. */
+.heroInner > :last-child {
+  text-align: left;
 }
 
-/* A ruled list: one row per service, not a grid of cards. */
-.service {
+/* Everything below the hero: one centred column. */
+.content {
   display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr) auto;
-  gap: var(--space-1) var(--space-6);
-  align-items: baseline;
-  padding-block: var(--space-4);
-  border-bottom: 1px solid var(--color-rule);
-  position: relative;
+  gap: var(--space-12);
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
 }
 
-.serviceLink {
+.features {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.sectionTitle {
   font-size: var(--text-lg);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-title);
-  text-decoration: none;
+  text-align: center;
+}
+
+.featureList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-6);
+}
+
+/* Centred on every screen size: icon, title and text on one axis. */
+.feature {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.featureIcon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: var(--radius-control);
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
 }
 
-/* The whole row is the click target; the link stays the accessible name. */
-.serviceLink::after {
-  content: "";
-  position: absolute;
-  inset: 0;
+.featureTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
 }
 
-.service:hover {
-  background: var(--color-surface-hover);
-}
-
-.service:hover .serviceLink {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.serviceLink:focus-visible {
-  box-shadow: none;
-}
-
-.service:has(.serviceLink:focus-visible) {
-  box-shadow: var(--focus-ring);
-  border-radius: var(--radius-control);
-}
-
-.description {
-  color: var(--color-ink);
-}
-
-.frequencies {
+.featureText {
   color: var(--color-graphite);
   font-size: var(--text-sm);
-  white-space: nowrap;
+}
+
+.about {
+  max-width: 60ch;
+  margin-inline: auto;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-rule);
+  color: var(--color-graphite);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.about strong {
+  color: var(--color-ink);
+  font-weight: var(--weight-semibold);
 }
 
 @media (max-width: 40rem) {
-  .service {
-    grid-template-columns: minmax(0, 1fr);
+  .hero {
+    padding-block: var(--space-8);
   }
 }

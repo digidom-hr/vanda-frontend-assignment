@@ -17,6 +17,8 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
+  /* Full-bleed bands (the home hero) reach 100vw, which includes the scrollbar; never scroll sideways for it. Clip, unlike hidden, keeps sticky positioning working. */
+  overflow-x: clip;
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
