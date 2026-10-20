@@ -1,0 +1,12 @@
+.logo {
+  display: block;
+  flex: none;
+}
+
+.mark {
+  fill: var(--color-brand-mark);
+}
+
+.wordmark {
+  fill: var(--color-brand-wordmark);
+}

@@ -48,11 +48,21 @@
 
 .wordmark {
   grid-area: wordmark;
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-title);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   text-decoration: none;
   border-radius: var(--radius-control);
+}
+
+/* The product name beside the logo, set off by a hairline like Vanda's "Vanda Analytics". */
+.product {
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-rule);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-title);
+  line-height: 1.75rem;
 }
 
 .search {

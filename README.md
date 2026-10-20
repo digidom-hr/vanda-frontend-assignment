@@ -98,7 +98,7 @@ Then add one entry each to the registry, `ADAPTERS` and `DASHBOARDS`. Those maps
 ## Quality
 
 - **Tests:**
-  - 396 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
+  - 399 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
   - 40 end-to-end tests (Playwright) against the real app and the unchanged mock API, on desktop and phone sizes, including simulated outages and slow loads;
   - axe accessibility audits of every page in light and dark mode.
 - **CI:** GitHub Actions runs `verify` and the end-to-end suite on every pull request and on `main`.

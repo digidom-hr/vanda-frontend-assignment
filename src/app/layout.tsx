@@ -17,8 +17,8 @@ const jost = Jost({
 
 export const metadata: Metadata = {
   title: {
-    default: "Timeseries",
-    template: "%s – Timeseries",
+    default: "Vanda Timeseries",
+    template: "%s – Vanda Timeseries",
   },
   description: "Search, chart and transform timeseries across data services.",
 };
