@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { VandaLogo } from "@/components/brand/VandaLogo";
 import { SearchDialog } from "@/components/search/SearchDialog";
 import styles from "./AppShell.module.css";
 import { ServiceNav } from "./ServiceNav";
@@ -13,8 +14,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <header className={styles.header}>
         <div className={styles.bar}>
+          {/* Named "Vanda Timeseries": the logo's title plus the product name. */}
           <Link href="/" className={styles.wordmark}>
-            Timeseries
+            <VandaLogo height={30} title="Vanda" />
+            <span className={styles.product}>Timeseries</span>
           </Link>
           <div className={styles.search}>
             <SearchDialog />
