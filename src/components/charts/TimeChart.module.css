@@ -29,5 +29,5 @@
 /* Highcharts' keyboard focus ring follows the design system. */
 .container :global(.highcharts-a11y-focus-indicator) path,
 .container :global(.highcharts-focus-border) {
-  stroke: var(--color-ink);
+  stroke: var(--color-accent);
 }

@@ -85,8 +85,8 @@ export interface ChartTokens {
   readonly rule: string;
   readonly grid: string;
   /** The one accent, and its translucent wash (e.g. the navigator's selected period). */
-  readonly highlighter: string;
-  readonly highlighterWash: string;
+  readonly accent: string;
+  readonly accentWash: string;
   readonly fontFamily: string;
   readonly colors: Readonly<Record<SeriesColorRole, string>>;
 }

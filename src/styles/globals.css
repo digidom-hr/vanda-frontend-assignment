@@ -74,8 +74,8 @@ svg {
 }
 
 ::selection {
-  background: var(--color-highlighter);
-  color: var(--color-on-highlighter);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 /* Hidden visually, still announced by screen readers. */

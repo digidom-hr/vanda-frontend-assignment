@@ -19,8 +19,8 @@ export type StandaloneNavigatorConfig = NavigatorOptions & { readonly chartOptio
 
 /**
  * The page's range control: Highcharts' standalone navigator drawn with the
- * design tokens. The selected period is the highlighter, the one bold element
- * of the design. It reports a new range only when a drag ends (no live
+ * design tokens. The selected period is the accent wash, the way Vanda's
+ * charts shade a highlighted period. It reports a new range only when a drag ends (no live
  * redraw), so the panels and the URL update once per decision, not per pixel.
  *
  * Highcharts' own accessibility layer is off here: its keyboard handles work
@@ -34,7 +34,7 @@ export function buildNavigatorOptions(spec: NavigatorSpec, tokens: ChartTokens):
   return {
     height: NAVIGATOR_HEIGHT,
     margin: 0,
-    maskFill: tokens.highlighterWash,
+    maskFill: tokens.accentWash,
     maskInside: true,
     outlineColor: tokens.rule,
     outlineWidth: 1,

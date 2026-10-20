@@ -14,7 +14,6 @@
 
 .status-page-title {
   font-size: var(--text-lg);
-  font-stretch: var(--font-width-expanded);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-title);
 }
@@ -43,8 +42,8 @@
   padding: 0 var(--space-4);
   border: 0;
   border-radius: var(--radius-control);
-  background: var(--color-ink);
-  color: var(--color-on-ink);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font-weight: var(--weight-semibold);
   cursor: pointer;
 }

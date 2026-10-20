@@ -21,6 +21,13 @@ export interface SegmentedControlProps<T extends string> {
   readonly value: T | null;
   readonly onChange: (value: T) => void;
   readonly size?: "small" | "medium";
+  /**
+   * accent: the selected option is filled with the brand colour, for the
+   * page's main choices (frequency, range). neutral: a quiet raised segment,
+   * for secondary choices that repeat (chart/table in every panel, theme), so
+   * purple keeps marking what matters most.
+   */
+  readonly tone?: "accent" | "neutral";
   readonly className?: string;
 }
 
@@ -35,6 +42,7 @@ export function SegmentedControl<T extends string>({
   value,
   onChange,
   size = "medium",
+  tone = "accent",
   className,
 }: SegmentedControlProps<T>) {
   const onSelectionChange = (keys: Set<Key>) => {
@@ -53,6 +61,7 @@ export function SegmentedControl<T extends string>({
       onSelectionChange={onSelectionChange}
       className={[styles.group, className].filter(Boolean).join(" ")}
       data-size={size}
+      data-tone={tone}
     >
       {options.map((option) => (
         <ToggleButton
