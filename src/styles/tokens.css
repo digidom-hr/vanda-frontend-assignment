@@ -57,26 +57,33 @@
   --color-shadow: light-dark(rgb(36 31 43 / 0.14), rgb(0 0 0 / 0.5));
 
   /*
-   * Colour: data. Validated with the dataviz palette validator against the
-   * chart surfaces (light #ffffff, dark #222927): every adjacent pair is
-   * distinguishable under protanopia/deuteranopia (worst ΔE 9.2 light /
-   * 9.4 dark, target 8), and slots 1-3 are distinguishable as any pair.
-   * (Palette slots are revised for Vanda in the charts commit.)
-   * Light slots 3 and 6 are under 3:1 on white, so charts always pair colour
+   * Colour: data, led by Vanda purple like Vanda's own charts (purple, then
+   * teal, orange, blue, pink, green). The slot order was chosen by running the
+   * dataviz palette validator over every ordering against the chart surfaces
+   * (light #ffffff, dark #1c1824) and keeping the strongest: every adjacent
+   * pair is distinguishable under protanopia/deuteranopia (worst ΔE 9.2 light /
+   * 9.4 dark, target 8) and with full colour vision (worst ΔE 27.5 / 26.5,
+   * floor 15); dark slots all sit in the lightness band and reach 3:1.
+   * Light slots 2 and 5 are under 3:1 on white, so charts always pair colour
    * with a legend, tooltips and a table view. Assign slots in order; a
    * series keeps its slot when others are added or removed.
    */
-  --color-series-1: light-dark(#2a78d6, #3987e5); /* blue */
-  --color-series-2: light-dark(#eb6834, #d95926); /* orange */
-  --color-series-3: light-dark(#1baf7a, #199e70); /* aqua */
-  --color-series-4: light-dark(#6250d6, #9085e9); /* violet */
-  --color-series-5: light-dark(#008300, #008300); /* green */
-  --color-series-6: light-dark(#e87ba4, #d55181); /* magenta */
+  --color-series-1: light-dark(#7a24bc, #b06ee0); /* purple (Vanda violet) */
+  --color-series-2: light-dark(#1baf7a, #199e70); /* teal */
+  --color-series-3: light-dark(#eb6834, #d95926); /* orange */
+  --color-series-4: light-dark(#2a78d6, #3987e5); /* blue */
+  --color-series-5: light-dark(#e87ba4, #d55181); /* pink */
+  --color-series-6: light-dark(#008300, #008300); /* green */
 
-  /* Diverging: sign of a value (net flows). Two opposite hues and a grey midpoint. */
-  --color-positive: light-dark(#2a78d6, #3987e5);
+  /*
+   * Diverging: sign of a value (net flows, signals). Purple for positive and
+   * red for negative, as on Vanda's positioning cards (not their site's
+   * green/red tokens, which colour-blind readers can't tell apart). Validated:
+   * ΔE 24.3 light / 19.1 dark under colour-blind simulation, both 3:1+.
+   */
+  --color-positive: light-dark(#7a24bc, #b06ee0);
   --color-negative: light-dark(#e34948, #e66767);
-  --color-neutral: light-dark(#8a938e, #7d8782);
+  --color-neutral: light-dark(#8b8596, #8a8496); /* violet grey, 3.6:1 / 4.8:1 */
 
   /* Charlie signals map onto the diverging scale; always shown with a label too. */
   --color-signal-high: var(--color-positive);
