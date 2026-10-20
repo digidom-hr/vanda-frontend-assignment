@@ -1,29 +1,36 @@
-.status {
+/*
+ * Error and not-found pages. Global rather than a CSS Module: Next.js preloads
+ * the root error boundary's styles on every page, and as a separate file they
+ * went unused ("preloaded but not used" warning). Under 1 KB, so they ship
+ * with the main stylesheet instead.
+ */
+
+.status-page {
   display: grid;
   gap: var(--space-3);
   max-width: 40rem;
   padding-top: var(--space-10);
 }
 
-.title {
+.status-page-title {
   font-size: var(--text-lg);
   font-stretch: var(--font-width-expanded);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-title);
 }
 
-.body {
+.status-page-body {
   color: var(--color-graphite);
 }
 
-.links {
+.status-page-links {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
   font-weight: var(--weight-medium);
 }
 
-.actions {
+.status-page-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -31,7 +38,7 @@
   padding-top: var(--space-2);
 }
 
-.primary {
+.status-page-primary {
   min-height: var(--control-height);
   padding: 0 var(--space-4);
   border: 0;
