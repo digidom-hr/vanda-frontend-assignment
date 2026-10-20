@@ -42,7 +42,13 @@ export default function TimeChartClient({ spec }: TimeChartProps) {
     <>
       <StockChart ref={ref} options={options} containerProps={{ className: styles.container }} />
       {zoomed && (
-        <button type="button" className={styles.reset} onClick={reset}>
+        <button
+          type="button"
+          className={styles.reset}
+          // Just inside the plot's top-right corner, clear of the legend above it.
+          style={{ top: zoomed.top + 6, right: zoomed.right + 6 }}
+          onClick={reset}
+        >
           <Icon name="rotate-ccw" size={12} />
           Reset zoom
         </button>
