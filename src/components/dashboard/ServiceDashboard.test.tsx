@@ -229,5 +229,12 @@ describe("ServiceDashboard", () => {
     // Every panel of the page, in its loading state, including custom ones.
     expect(screen.getByRole("region", { name: "Score" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Signal board" })).toBeInTheDocument();
+    // One chart: nothing to link hover across.
+    expect(screen.queryByRole("switch", { name: "Link hover" })).not.toBeInTheDocument();
+  });
+
+  it("offers Link hover when the page has several charts", async () => {
+    setup();
+    expect(await screen.findByRole("switch", { name: "Link hover" })).not.toBeChecked();
   });
 });

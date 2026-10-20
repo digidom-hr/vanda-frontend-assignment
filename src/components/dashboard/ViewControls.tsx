@@ -1,6 +1,8 @@
 "use client";
 
+import { Switch } from "react-aria-components";
 import { SegmentedControl } from "@/components/controls/SegmentedControl";
+import { useLinkHover } from "@/hooks/useLinkHover";
 import { formatTimestamp } from "@/lib/format";
 import { parseTimestamp } from "@/lib/time";
 import { RANGE_PRESETS, type RangePreset } from "@/lib/url-state";
@@ -76,5 +78,22 @@ export function RangeControl({
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * "Link hover": hovering a date in one chart marks it in every chart on the
+ * page. Off by default (each chart keeps to itself) and remembered in this
+ * browser. Only offered where there is a hover (a mouse or trackpad).
+ */
+export function LinkHoverSwitch() {
+  const [on, setOn] = useLinkHover();
+  return (
+    <Switch className={styles.switch} isSelected={on} onChange={setOn}>
+      <span className={styles.track} aria-hidden="true">
+        <span className={styles.thumb} />
+      </span>
+      Link hover
+    </Switch>
   );
 }

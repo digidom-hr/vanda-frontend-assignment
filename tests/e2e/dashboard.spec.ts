@@ -246,17 +246,33 @@ test.describe("service dashboard", () => {
     await expect(price.getByRole("button", { name: "Reset zoom" })).toHaveCount(0);
   });
 
-  test("hovering a chart marks the date in that chart only", async ({ page }) => {
+  test("hovering a chart marks the date in that chart only, or in every chart with Link hover on", async ({ page }) => {
     await page.goto("/alpha?series=A-0001&range=3M");
     await waitForCharts(page);
     const price = page.getByRole("region", { name: "Price" });
     const flow = page.getByRole("region", { name: "Net order flow" });
     await drawn(price, flow);
     const plot = (await chartOf(price).locator(".highcharts-plot-background").boundingBox())!;
-    await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2, { steps: 5 });
+    const hover = async () => {
+      await page.mouse.move(plot.x + plot.width / 3, plot.y + plot.height / 2, { steps: 5 });
+      await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2, { steps: 5 });
+    };
+
+    await hover();
     // Counted, not "visible": a 1px vertical line has an empty bounding box.
     await expect(price.locator(".highcharts-crosshair")).toHaveCount(1);
     await expect(flow.locator(".highcharts-crosshair")).toHaveCount(0);
+
+    // React Aria visually hides the native input; users click the visible label.
+    await page.locator("label", { has: page.getByRole("switch", { name: "Link hover" }) }).click();
+    await expect(page.getByRole("switch", { name: "Link hover" })).toBeChecked();
+    await hover();
+    await expect(flow.locator(".highcharts-crosshair")).toHaveCount(1);
+
+    // A preference of this browser: still on after a reload, and not in the URL.
+    expect(page.url()).not.toContain("link");
+    await page.reload();
+    await expect(page.getByRole("switch", { name: "Link hover" })).toBeChecked();
   });
 
   test("the navigator's keyboard controls drive every panel", async ({ page }) => {
