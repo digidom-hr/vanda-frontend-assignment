@@ -28,6 +28,7 @@ import { panelAvailable, type ChartPanelDefinition, type PanelContext, type Pane
 import styles from "./ServiceDashboard.module.css";
 import { SeriesPicker, type SeriesPickerProps } from "./SeriesPicker";
 import { TimeRail } from "./TimeRail";
+import { TransformEditor } from "./TransformEditor";
 import { FrequencyControl, RangeControl } from "./ViewControls";
 
 /** Explicit layout → class map: layout names are data, not CSS class names. */
@@ -241,6 +242,15 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
                   error={main.error}
                   onRetry={() => void main.refetch()}
                   isRefreshing={isRefreshing}
+                  toolbar={
+                    panel.layout === "primary" ? (
+                      <TransformEditor
+                        transforms={state.transforms}
+                        onChange={actions.setTransforms}
+                        frequency={frequency}
+                      />
+                    ) : undefined
+                  }
                 />
               ),
             )}
@@ -259,6 +269,7 @@ function DashboardPanel({
   onRetry,
   isRefreshing,
   emptyMessage,
+  toolbar,
 }: {
   panel: ChartPanelDefinition;
   ctx: PanelContext | null;
@@ -267,6 +278,7 @@ function DashboardPanel({
   onRetry: () => void;
   isRefreshing: boolean;
   emptyMessage?: string;
+  toolbar?: ReactNode;
 }) {
   const spec = useMemo(() => (ctx && status === "success" ? panel.build(ctx) : null), [ctx, panel, status]);
   const table = useMemo(() => (spec ? chartTable(spec) : undefined), [spec]);
@@ -280,6 +292,7 @@ function DashboardPanel({
       onRetry={onRetry}
       isEmpty={status === "success" && spec === null}
       emptyMessage={emptyMessage}
+      toolbar={toolbar}
       isRefreshing={isRefreshing}
       table={table}
       bodyHeight={panel.bodyHeight}

@@ -1,0 +1,249 @@
+.editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-1) 0 var(--space-3);
+  min-height: 1.75rem;
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.then {
+  color: var(--color-graphite);
+  font-size: var(--text-xs);
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-graphite);
+  cursor: pointer;
+}
+
+.remove[data-hovered] {
+  background: var(--color-surface-hover);
+  color: var(--color-ink);
+}
+
+.remove[data-focus-visible],
+.add[data-focus-visible],
+.clear[data-focus-visible],
+.submit[data-focus-visible] {
+  box-shadow: var(--focus-ring);
+}
+
+.add,
+.clear {
+  min-height: 1.75rem;
+  padding: 0 var(--space-3);
+  border: 1px dashed var(--color-graphite);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.clear {
+  border-style: solid;
+  border-color: transparent;
+  color: var(--color-graphite);
+}
+
+.add[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.note {
+  color: var(--color-graphite);
+  font-size: var(--text-xs);
+}
+
+@media (pointer: coarse) {
+  .add,
+  .clear,
+  .chip {
+    min-height: var(--touch-target);
+  }
+
+  .remove {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+/* Popover */
+.popover {
+  width: min(22rem, calc(100vw - 2rem));
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sheet);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+}
+
+.popover[data-entering] {
+  animation: rise var(--duration-base) var(--ease-out);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.dialog {
+  outline: none;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.kinds {
+  display: grid;
+  gap: 2px;
+}
+
+.kind {
+  display: grid;
+  gap: 1px;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  cursor: pointer;
+}
+
+.kind[data-hovered] {
+  background: var(--color-surface-hover);
+}
+
+.kind[data-selected] {
+  border-left-color: var(--color-ink);
+  background: var(--color-surface-hover);
+}
+
+.kind[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px var(--color-ink);
+}
+
+.kindLabel {
+  font-weight: var(--weight-semibold);
+}
+
+.kind:not([data-selected]) .kindLabel {
+  font-weight: var(--weight-medium);
+}
+
+.kindHelp {
+  color: var(--color-graphite);
+  font-size: var(--text-xs);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.fieldLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.input {
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.input[data-focused] {
+  outline: none;
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 3px var(--color-highlighter-wash);
+}
+
+.fieldHelp {
+  color: var(--color-graphite);
+  font-size: var(--text-xs);
+}
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.box {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  border: 1.5px solid var(--color-graphite);
+  border-radius: 3px;
+}
+
+.checkbox[data-selected] .box {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  box-shadow: inset 0 0 0 2px var(--color-surface);
+}
+
+.checkbox[data-focus-visible] .box {
+  box-shadow: var(--focus-ring);
+}
+
+.submit {
+  justify-self: start;
+  min-height: var(--control-height);
+  padding: 0 var(--space-5);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.submit[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
