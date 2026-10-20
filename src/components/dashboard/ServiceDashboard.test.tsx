@@ -147,8 +147,11 @@ describe("ServiceDashboard", () => {
     setup("?series=A-0001,A-0013");
     // Wait for the series, not just the heading: while loading, the service's frequencies are offered.
     expect(await screen.findByRole("heading", { level: 1, name: "Acme Corp (ACMC)" })).toBeInTheDocument();
-    expect(screen.queryByRole("radiogroup", { name: "Frequency" })).not.toBeInTheDocument();
-    expect(within(document.body).getAllByText("Daily").length).toBeGreaterThan(0);
+    // A-0013 has daily data only, so daily is the one option, shown selected.
+    const frequency = screen.getByRole("radiogroup", { name: "Frequency" });
+    const options = within(frequency).getAllByRole("radio");
+    expect(options.map((o) => o.textContent)).toEqual(["Daily"]);
+    expect(options[0]).toHaveAttribute("aria-checked", "true");
   });
 
   it("shows a page-level error with retry when the catalog can't load", async () => {

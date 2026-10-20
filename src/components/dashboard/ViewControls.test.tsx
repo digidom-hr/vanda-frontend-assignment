@@ -11,10 +11,13 @@ describe("FrequencyControl", () => {
     expect(onChange).toHaveBeenCalledWith("weekly");
   });
 
-  it("shows a single frequency as text, not a one-option control", () => {
-    render(<FrequencyControl frequencies={["daily"]} value="daily" onChange={() => {}} />);
-    expect(screen.queryByRole("radiogroup")).not.toBeInTheDocument();
-    expect(screen.getByText("Daily")).toBeInTheDocument();
+  it("shows a single frequency as the same control, selected, so it reads like the other pages", async () => {
+    const onChange = vi.fn();
+    render(<FrequencyControl frequencies={["daily"]} value="daily" onChange={onChange} />);
+    const daily = screen.getByRole("radio", { name: "Daily" });
+    expect(daily).toHaveAttribute("aria-checked", "true");
+    await userEvent.click(daily);
+    expect(onChange).not.toHaveBeenCalled(); // nothing to switch to
   });
 });
 
