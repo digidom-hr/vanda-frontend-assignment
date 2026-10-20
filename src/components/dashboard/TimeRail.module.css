@@ -65,11 +65,13 @@
   box-shadow: var(--focus-ring);
 }
 
+/* Edge handles: a 24px hit area (WCAG 2.2 target size) centred on the edge, drawn as a 2px ink line. */
 .handle {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 12px;
+  width: 24px;
+  margin-left: -12px;
   cursor: ew-resize;
   outline: none;
 }
@@ -79,41 +81,30 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 5px;
+  left: 11px;
   width: 2px;
   background: var(--color-ink);
 }
 
-.handle[data-edge="start"] {
-  left: -6px;
-}
-
-.handle[data-edge="end"] {
-  right: -6px;
-}
-
 .handle:focus-visible::after {
   width: 4px;
-  left: 4px;
+  left: 10px;
   box-shadow: 0 0 0 3px var(--color-highlighter);
 }
 
 /* Wider grab area on touch screens. */
 @media (pointer: coarse) {
   .handle {
-    width: 28px;
+    width: 44px;
+    margin-left: -22px;
   }
 
   .handle::after {
-    left: 13px;
+    left: 21px;
   }
 
-  .handle[data-edge="start"] {
-    left: -14px;
-  }
-
-  .handle[data-edge="end"] {
-    right: -14px;
+  .handle:focus-visible::after {
+    left: 20px;
   }
 }
 
