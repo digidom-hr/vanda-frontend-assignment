@@ -4,6 +4,8 @@ import Highcharts from "highcharts/es-modules/masters/highstock.src.js";
 // Side-effect import: registers the standalone navigator.
 import "highcharts/es-modules/masters/modules/navigator.src.js";
 import { useEffect, useMemo, useRef } from "react";
+import { createGestureSession, panSpan, wheelPixels, wheelZoomFactor, zoomSpan, type Span } from "@/lib/range-gestures";
+import { useChartSync } from "./ChartSync";
 import { useChartTokens } from "./chart-tokens";
 import { buildNavigatorOptions } from "./navigator-options";
 import type { NavigatorPlot, RangeNavigatorProps } from "./RangeNavigator";
@@ -16,8 +18,8 @@ import styles from "./RangeNavigator.module.css";
 interface StandaloneNavigator {
   /** The inner navigator: fires `setRange` when the user settles on a range. */
   readonly navigator: {
-    /** The navigator's time axis: converts a time to a pixel position in the chart. */
-    readonly xAxis: { toPixels(value: number): number };
+    /** The navigator's time axis: converts between times and pixel positions in the chart. */
+    readonly xAxis: { toPixels(value: number): number; toValue(pixel: number): number; readonly len: number };
     readonly chart: object;
   };
   setRange(min: number, max: number, redraw?: boolean, animation?: boolean): void;
@@ -40,9 +42,20 @@ export interface RangeNavigatorClientProps extends RangeNavigatorProps {
   readonly onLayout: (plot: NavigatorPlot) => void;
 }
 
+/** A wheel this soon after the page scrolled continues the scroll instead of zooming (ms). */
+const SCROLL_CARRY_MS = 200;
+
 /** Highcharts' standalone navigator, kept in step with the page's range. Use `RangeNavigator`. */
-export default function RangeNavigatorClient({ t, values, range, onCommit, onLayout }: RangeNavigatorClientProps) {
+export default function RangeNavigatorClient({
+  t,
+  values,
+  range,
+  minWidth,
+  onCommit,
+  onLayout,
+}: RangeNavigatorClientProps) {
   const tokens = useChartTokens();
+  const sync = useChartSync();
   const container = useRef<HTMLDivElement>(null);
   const instance = useRef<StandaloneNavigator | null>(null);
   // True while this component moves the navigator itself, so that move isn't reported back as a user choice.
@@ -50,10 +63,14 @@ export default function RangeNavigatorClient({ t, values, range, onCommit, onLay
   const lastCommit = useRef<string | null>(null);
   const onCommitRef = useRef(onCommit);
   const onLayoutRef = useRef(onLayout);
+  const rangeRef = useRef(range);
+  const minWidthRef = useRef(minWidth);
   useEffect(() => {
     onCommitRef.current = onCommit;
     onLayoutRef.current = onLayout;
-  }, [onCommit, onLayout]);
+    rangeRef.current = range;
+    minWidthRef.current = minWidth;
+  }, [onCommit, onLayout, range, minWidth]);
 
   const options = useMemo(() => buildNavigatorOptions({ t, values }, tokens), [t, values, tokens]);
 
@@ -73,20 +90,78 @@ export default function RangeNavigatorClient({ t, values, range, onCommit, onLay
     };
     const removeRenderListener = Highcharts.addEvent(nav.navigator.chart, "render", reportLayout);
     reportLayout();
+    // Shows a range without reporting it back as the user's choice.
+    const move = (span: Span) => {
+      const current = nav.getRange();
+      if (current.min === span.min && current.max === span.max) return;
+      syncing.current = true;
+      try {
+        nav.setRange(span.min, span.max, true, false);
+      } finally {
+        syncing.current = false;
+      }
+    };
+    // The page rounds a range to whole days; show what it settled on, even
+    // when that is the range it already had (so no re-render would move us).
+    let settleFrame = 0;
+    const commit = (span: Span) => {
+      const shown = onCommitRef.current(span);
+      cancelAnimationFrame(settleFrame);
+      settleFrame = requestAnimationFrame(() => move(shown));
+      return shown;
+    };
     const removeListener = Highcharts.addEvent(nav.navigator, "setRange", (event: SetRangeEvent) => {
       if (syncing.current) return;
       const key = `${event.min}:${event.max}`;
       if (key === lastCommit.current) return;
       lastCommit.current = key;
-      onCommitRef.current({ min: event.min, max: event.max });
+      commit({ min: event.min, max: event.max });
     });
+
+    // Follow a zoom or pan on a chart while it happens.
+    const stopFollowing = sync?.onPreview(move);
+
+    // The wheel zooms the period around the pointer; Shift + wheel or a
+    // sideways swipe moves it. The charts follow live, the page when it settles.
+    const history = { min: first, max: last };
+    const session = createGestureSession((span) => (sync ? sync.preview(span) : move(span)), commit);
+    let lastPageScroll = -Infinity;
+    const onScroll = () => {
+      lastPageScroll = performance.now();
+    };
+    const onWheel = (event: WheelEvent) => {
+      // Scrolling the page past the strip carries on scrolling the page.
+      if (performance.now() - lastPageScroll < SCROLL_CARRY_MS) return;
+      event.preventDefault();
+      const dx = wheelPixels(event.deltaX, event.deltaMode);
+      const dy = wheelPixels(event.deltaY, event.deltaMode);
+      const sideways = Math.abs(dx) > Math.abs(dy) ? dx : event.shiftKey ? dy : 0;
+      const span = session.current(rangeRef.current);
+      const axis = nav.navigator.xAxis;
+      if (sideways !== 0) {
+        // One navigator width of scrolling moves the period by its own width.
+        session.move(panSpan(span, history, (sideways * (span.max - span.min)) / axis.len));
+      } else {
+        const x = event.clientX - element.getBoundingClientRect().left;
+        session.move(zoomSpan(span, history, wheelZoomFactor(dy), axis.toValue(x), minWidthRef.current));
+      }
+      session.endSoon();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    element.addEventListener("wheel", onWheel, { passive: false });
+
     return () => {
+      window.removeEventListener("scroll", onScroll);
+      element.removeEventListener("wheel", onWheel);
+      session.cancel();
+      cancelAnimationFrame(settleFrame);
+      stopFollowing?.();
       removeRenderListener();
       removeListener();
       nav.destroy();
       instance.current = null;
     };
-  }, [options, t]);
+  }, [options, t, sync]);
 
   // Follow the page's range (presets, links, Back/Forward).
   useEffect(() => {

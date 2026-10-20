@@ -67,6 +67,32 @@ export function extentOf(columns: readonly SeriesColumns[]): TimeExtent | null {
   return Number.isFinite(start) ? { start, end } : null;
 }
 
+const DAY_MS = 86_400_000;
+
+/**
+ * The narrowest period a zoom gesture reaches at each frequency: a handful of
+ * data points. Intraday stops at one day, the page range's unit.
+ */
+export const MIN_ZOOM_WIDTH: Readonly<Record<Frequency, number>> = {
+  "5min": DAY_MS,
+  daily: 7 * DAY_MS,
+  weekly: 8 * 7 * DAY_MS,
+  monthly: 183 * DAY_MS,
+};
+
+/**
+ * A range from a gesture as the page stores it (whole days, for the URL) and
+ * shows it: from the start of its first day to the end of its last.
+ */
+export function toDayRange(
+  range: { min: number; max: number },
+  extent: TimeExtent,
+): { from: string; to: string; range: { min: number; max: number } } {
+  const from = toIsoDate(range.min);
+  const to = toIsoDate(range.max);
+  return { from, to, range: resolveRange({ preset: "All", from, to }, extent) };
+}
+
 /**
  * The date window to request. Daily and slower data is small enough to load
  * in full (zooming is then instant); intraday data is loaded for the visible

@@ -34,7 +34,7 @@ export const SERVICE_TOUR: readonly TourStep[] = [
   {
     targets: ["navigator"],
     title: "Fine-tune the period",
-    text: "Drag the highlighted window or its handles under the chart. Every panel follows when you let go.",
+    text: "Drag the highlighted window or its handles, or scroll over the strip to zoom. On any chart, drag to pan and pinch or Ctrl + scroll to zoom. Every panel follows.",
   },
   {
     targets: ["panel-view"],
