@@ -2,8 +2,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
+import { queryKeys } from "@/lib/query-keys";
 import { stubApi } from "@/test/render";
-import { useCharlieLatest, useSeriesList, useTimeseries, type TimeseriesParams } from "./useServiceData";
+import {
+  prefetchCatalogs,
+  useCharlieLatest,
+  useSeriesList,
+  useTimeseries,
+  type TimeseriesParams,
+} from "./useServiceData";
 
 function wrapper() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -21,6 +28,31 @@ describe("useSeriesList", () => {
     const { result } = renderHook(() => useSeriesList("alpha"), { wrapper: wrapper() });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe("/api/alpha/series");
+  });
+});
+
+describe("prefetchCatalogs", () => {
+  it("starts loading every service catalog into the cache", async () => {
+    const fetchMock = stubApi(() => Response.json({ service: "alpha", series: [] }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    prefetchCatalogs(client);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      "/api/alpha/series",
+      "/api/bravo/series",
+      "/api/charlie/series",
+    ]);
+    await waitFor(() => expect(client.getQueryData(queryKeys.seriesList("bravo"))).toBeDefined());
+  });
+
+  it("does not refetch a catalog that is already fresh", async () => {
+    const fetchMock = stubApi(() => Response.json({ service: "alpha", series: [] }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    prefetchCatalogs(client);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    prefetchCatalogs(client);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });
 

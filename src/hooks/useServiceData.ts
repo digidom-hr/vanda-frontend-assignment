@@ -1,16 +1,31 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQuery, type QueryClient } from "@tanstack/react-query";
 import { apiGet } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
+import { SERVICES } from "@/services/registry";
 import type { CharlieLatestResponse, SeriesListResponse, TimeseriesResponse } from "@/services/api-types";
 import type { Frequency } from "@/services/types";
 
 /** A service's series catalog. Catalogs change rarely, so they stay fresh for 10 minutes. */
-export function useSeriesList(service: string) {
-  return useQuery({
+export function seriesListQuery(service: string) {
+  return queryOptions({
     queryKey: queryKeys.seriesList(service),
     queryFn: ({ signal }) => apiGet<SeriesListResponse>(`${service}/series`, undefined, signal),
     staleTime: 10 * 60_000,
   });
+}
+
+export function useSeriesList(service: string) {
+  return useQuery(seriesListQuery(service));
+}
+
+/**
+ * Starts loading every catalog in the background. Called once when the app
+ * opens, so a sleeping data service starts waking while the visitor is still
+ * on the first page, and later pages find their catalog already cached.
+ * Failures are ignored here; the page that needs a catalog shows its own state.
+ */
+export function prefetchCatalogs(client: QueryClient): void {
+  for (const service of SERVICES) void client.prefetchQuery(seriesListQuery(service.id));
 }
 
 export interface TimeseriesParams {
