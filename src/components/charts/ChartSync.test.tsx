@@ -8,9 +8,15 @@ type Chart = HighchartsReactRefObject["chart"];
 
 /** A stand-in with just what the sync touches: one x-axis and one series of points. */
 function fakeChart(xs: number[], extremes = { min: 0, max: 100 }) {
-  const axis = { drawCrosshair: vi.fn(), hideCrosshair: vi.fn(), getExtremes: () => extremes };
+  const axis = { drawCrosshair: vi.fn(), hideCrosshair: vi.fn(), setExtremes: vi.fn(), getExtremes: () => extremes };
   const points = xs.map((x) => ({ x }));
-  return { chart: { xAxis: [axis], series: [{ visible: true, points }] } as unknown as Chart, axis, points };
+  const pointer = { reset: vi.fn() };
+  return {
+    chart: { xAxis: [axis], series: [{ visible: true, points }], pointer } as unknown as Chart,
+    axis,
+    points,
+    pointer,
+  };
 }
 
 describe("showCrosshairAt", () => {
@@ -56,6 +62,27 @@ describe("ChartSyncProvider", () => {
 
     sync?.hover(a.chart, null);
     expect(b.axis.hideCrosshair).toHaveBeenCalled();
+  });
+
+  it("shows a previewed range in every chart and tells the listeners", () => {
+    const { result } = renderHook(() => useChartSync(), { wrapper });
+    const sync = result.current;
+    const a = fakeChart([10, 20]);
+    const b = fakeChart([10, 20]);
+    sync?.register(a.chart);
+    sync?.register(b.chart);
+    const listener = vi.fn();
+    const stop = sync?.onPreview(listener);
+
+    sync?.preview({ min: 5, max: 15 });
+    expect(a.axis.setExtremes).toHaveBeenCalledWith(5, 15, true, false);
+    expect(b.axis.setExtremes).toHaveBeenCalledWith(5, 15, true, false);
+    expect(a.pointer.reset).toHaveBeenCalled();
+    expect(listener).toHaveBeenCalledWith({ min: 5, max: 15 });
+
+    stop?.();
+    sync?.preview({ min: 6, max: 16 });
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 
   it("is absent outside a provider, so charts don't sync", () => {

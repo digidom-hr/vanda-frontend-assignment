@@ -7,6 +7,7 @@ import {
   fetchWindow,
   resolveFrequency,
   resolveSelection,
+  toDayRange,
 } from "./dashboard";
 
 const meta = (id: string, frequencies: SeriesMeta["frequencies"] = ["daily"], unit = "USD"): SeriesMeta => ({
@@ -86,5 +87,23 @@ describe("fetchWindow", () => {
   it("loads intraday data for the visible range only, once the extent is known", () => {
     expect(fetchWindow("5min", sixMonths, extent)).toEqual({ from: "2025-06-30", to: "2025-12-31" });
     expect(fetchWindow("5min", sixMonths, null)).toBeNull();
+  });
+});
+
+describe("toDayRange", () => {
+  const extent = { start: Date.UTC(2021, 0, 4), end: Date.UTC(2025, 11, 31, 16) };
+
+  it("rounds a gesture's range out to whole days, the way the URL stores it", () => {
+    const range = { min: Date.UTC(2025, 2, 3, 10, 30), max: Date.UTC(2025, 2, 10, 7) };
+    expect(toDayRange(range, extent)).toEqual({
+      from: "2025-03-03",
+      to: "2025-03-10",
+      range: { min: Date.UTC(2025, 2, 3), max: Date.UTC(2025, 2, 11) - 1 },
+    });
+  });
+
+  it("stays inside the history", () => {
+    const range = { min: Date.UTC(2025, 11, 1, 12), max: Date.UTC(2025, 11, 31, 15) };
+    expect(toDayRange(range, extent).range).toEqual({ min: Date.UTC(2025, 11, 1), max: extent.end });
   });
 });

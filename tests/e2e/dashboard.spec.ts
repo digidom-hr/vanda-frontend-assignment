@@ -166,6 +166,75 @@ test.describe("service dashboard", () => {
     await expect(navigator.getByText(/data points/)).not.toContainText("to 31 Dec 2025");
   });
 
+  test("the wheel over the navigator zooms the page's range around the pointer", async ({ page }) => {
+    await page.goto("/alpha?series=A-0001&range=1Y");
+    await waitForCharts(page);
+    const navigator = page.getByRole("group", { name: "Time range for Acme Corp (ACMC)" });
+    const period = (await navigator.locator(".highcharts-navigator-mask-inside").boundingBox())!;
+    // Pointer on the period's right end (its grip): zooming in keeps the end where it is.
+    await page.mouse.move(period.x + period.width + 2, period.y + period.height / 2);
+    await page.mouse.wheel(0, -300);
+
+    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}&to=2025-12-31/);
+    expect(daysShown(page.url())).toBeLessThan(200);
+    await expect(navigator.getByText(/data points/)).not.toContainText("31 Dec 2024");
+    expect(await page.evaluate(() => window.scrollY)).toBe(0); // the wheel zoomed; it didn't scroll
+
+    // Shift + wheel moves the period back in time, keeping its length.
+    const zoomed = daysShown(page.url());
+    await page.keyboard.down("Shift");
+    await page.mouse.wheel(0, -400);
+    await page.keyboard.up("Shift");
+    await expect(page).not.toHaveURL(/to=2025-12-31/);
+    expect(Math.abs(daysShown(page.url()) - zoomed)).toBeLessThanOrEqual(1);
+  });
+
+  test("dragging a chart pans every panel, once, on release", async ({ page }) => {
+    await page.goto("/alpha?series=A-0001&range=3M");
+    await waitForCharts(page);
+    const plot = (await page
+      .getByRole("region", { name: "Price" })
+      .locator(".highcharts-plot-background")
+      .first()
+      .boundingBox())!;
+    const y = plot.y + plot.height / 2;
+    await page.mouse.move(plot.x + plot.width / 3, y);
+    await page.mouse.down();
+    await page.mouse.move(plot.x + plot.width / 3 + 300, y, { steps: 10 });
+    // The charts move live; the URL and the data wait for the release.
+    expect(page.url()).not.toContain("from=");
+    await page.mouse.up();
+
+    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2}/);
+    expect(new URL(page.url()).searchParams.get("to")! < "2025-12-31").toBe(true);
+    // Another panel follows: its latest value is from before the old end.
+    const flow = page.getByRole("region", { name: "Net order flow" });
+    await expect(flow.locator("header")).not.toContainText("31 Dec 2025");
+  });
+
+  test("Ctrl + wheel (a trackpad pinch) zooms a chart's range; a sideways swipe pans it", async ({ page }) => {
+    await page.goto("/alpha?series=A-0001&range=1Y");
+    await waitForCharts(page);
+    const plot = (await page
+      .getByRole("region", { name: "Price" })
+      .locator(".highcharts-plot-background")
+      .first()
+      .boundingBox())!;
+    await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2);
+    await page.keyboard.down("Control");
+    await page.mouse.wheel(0, -300);
+    await page.keyboard.up("Control");
+    await expect(page).toHaveURL(/from=/);
+    const zoomed = daysShown(page.url());
+    expect(zoomed).toBeLessThan(200);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+    const to = new URL(page.url()).searchParams.get("to")!;
+    await page.mouse.wheel(-300, 0);
+    await expect.poll(() => new URL(page.url()).searchParams.get("to")! < to).toBe(true);
+    expect(Math.abs(daysShown(page.url()) - zoomed)).toBeLessThanOrEqual(1);
+  });
+
   test("the navigator's keyboard controls drive every panel", async ({ page }) => {
     await page.goto("/alpha?series=A-0001&range=6M");
     await waitForCharts(page);
@@ -203,3 +272,9 @@ test.describe("service dashboard", () => {
     expect(requests.some((u) => u.includes("from=2025-11-30") && u.includes("to=2025-12-31"))).toBe(true);
   });
 });
+
+/** Days from the URL's `from` to its `to`. */
+function daysShown(url: string): number {
+  const params = new URL(url).searchParams;
+  return (Date.parse(params.get("to")!) - Date.parse(params.get("from")!)) / 86_400_000;
+}

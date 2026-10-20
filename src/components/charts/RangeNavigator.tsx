@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { formatTimestamp } from "@/lib/format";
+import type { Span } from "@/lib/range-gestures";
 import { windowForKey, windowForRange, type IndexWindow, type WindowPart } from "@/lib/rail";
 import { NAVIGATOR_HEIGHT, NAVIGATOR_TOTAL_HEIGHT } from "./navigator-options";
 import styles from "./RangeNavigator.module.css";
@@ -13,9 +14,14 @@ export interface RangeNavigatorProps {
   readonly t: readonly number[];
   readonly values: readonly (number | null)[];
   /** The visible range in epoch ms. */
-  readonly range: { readonly min: number; readonly max: number };
-  /** Called when the user settles on a new range (end of a drag, or a key press). */
-  readonly onCommit: (range: { min: number; max: number }) => void;
+  readonly range: Span;
+  /**
+   * Called when the user settles on a new range (end of a drag, a key press,
+   * a wheel zoom). Returns the range the page shows for it (rounded to whole days).
+   */
+  readonly onCommit: (range: Span) => Span;
+  /** The narrowest range a wheel zoom reaches, in ms. */
+  readonly minWidth: number;
   readonly label: string;
 }
 
@@ -42,7 +48,8 @@ const RangeNavigatorClient = dynamic(loadRangeNavigator, {
 /**
  * The page's range control, under the primary chart: Highcharts' navigator
  * over the primary series' whole history, with the visible period
- * highlighted. Every panel follows when a drag ends.
+ * highlighted. Every panel follows when a drag ends. The wheel zooms the
+ * period around the pointer; Shift + wheel or a sideways swipe moves it.
  *
  * Highcharts draws it and handles the pointer. Keyboard and screen readers
  * use three sliders laid over it (the period, its start, its end) that move
@@ -109,21 +116,32 @@ export function RangeNavigator(props: RangeNavigatorProps) {
           {slider("end", "End of period", shown.end, date(shown.end), { "--at": at(shown.end) } as CSSProperties)}
         </div>
       </div>
-      <p className={styles.caption} aria-live="polite">
-        {periodText}, {points.toLocaleString("en-US")} data points
-      </p>
+      <div className={styles.footer}>
+        <p className={styles.caption} aria-live="polite">
+          {periodText}, {points.toLocaleString("en-US")} data points
+        </p>
+        {GESTURE_HINT}
+      </div>
     </div>
   );
 }
+
+/** Mouse and trackpad gestures aren't discoverable: name them (pointer devices only, see the CSS). */
+const GESTURE_HINT = (
+  <p className={styles.hint}>Scroll here to zoom. On a chart: drag to pan, pinch or Ctrl + scroll to zoom.</p>
+);
 
 /** The navigator's shape while its overview loads, at the same height so nothing shifts. */
 export function RangeNavigatorSkeleton() {
   return (
     <div className={styles.wrap} aria-hidden="true">
       <Skeleton height={NAVIGATOR_TOTAL_HEIGHT} />
-      <span className={styles.caption}>
-        <Skeleton tone="text" width="15rem" />
-      </span>
+      <div className={styles.footer}>
+        <span className={styles.caption}>
+          <Skeleton tone="text" width="15rem" />
+        </span>
+        {GESTURE_HINT}
+      </div>
     </div>
   );
 }

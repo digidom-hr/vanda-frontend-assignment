@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, ViewTransition, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, ViewTransition, type ReactNode } from "react";
 import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from "react-aria-components";
 import { ChartSyncProvider } from "@/components/charts/ChartSync";
 import { chartTable } from "@/components/charts/chart-table";
 import type { ChartSpec } from "@/components/charts/chart-options";
+import { RangeGesturesProvider, type RangeGestures } from "@/components/charts/RangeGestures";
 import { preloadRangeNavigator, RangeNavigator, RangeNavigatorSkeleton } from "@/components/charts/RangeNavigator";
 import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
 import { Skeleton } from "@/components/feedback/Skeleton";
@@ -20,8 +21,10 @@ import {
   compareBlockedReason,
   extentOf,
   fetchWindow,
+  MIN_ZOOM_WIDTH,
   resolveFrequency,
   resolveSelection,
+  toDayRange,
 } from "@/lib/dashboard";
 import { formatFacetValue, formatTimestamp, formatValue } from "@/lib/format";
 import { toIsoDate } from "@/lib/time";
@@ -137,6 +140,38 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
     [primary, service, selection.series, columns, frequency, rangeMin, rangeMax, state.transforms],
   );
 
+  // Zooming and panning (the navigator, or any chart) set one range for the
+  // whole page, stored in whole days like a typed or linked range.
+  const commitRange = useCallback(
+    (span: { min: number; max: number }) => {
+      if (!extent) return span;
+      const days = toDayRange(span, extent);
+      // The same days as now (e.g. a drag at the end of the history): keep the
+      // URL as it is, preset included.
+      const unchanged =
+        rangeMin !== undefined &&
+        rangeMax !== undefined &&
+        days.from === toIsoDate(rangeMin) &&
+        days.to === toIsoDate(rangeMax);
+      if (!unchanged) actions.setCustomRange(days.from, days.to);
+      return days.range;
+    },
+    [extent, actions, rangeMin, rangeMax],
+  );
+  const minZoomWidth = MIN_ZOOM_WIDTH[frequency];
+  const gestures = useMemo<RangeGestures | null>(
+    () =>
+      extent && rangeMin !== undefined && rangeMax !== undefined
+        ? {
+            range: { min: rangeMin, max: rangeMax },
+            extent: { min: extent.start, max: extent.end },
+            minWidth: minZoomWidth,
+            commit: commitRange,
+          }
+        : null,
+    [extent, rangeMin, rangeMax, minZoomWidth, commitRange],
+  );
+
   // One explanation for the whole page when loading is slow (e.g. a data service
   // waking up). Declared before the early return below: hooks must always run.
   const slowLoad = useDelayedFlag(catalog.isPending || (primary !== undefined && main.isPending), SLOW_LOAD_MS);
@@ -186,7 +221,8 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
         t={overviewSeries.t}
         values={overviewSeries.fields[config.overviewField] ?? []}
         range={range}
-        onCommit={({ min, max }) => actions.setCustomRange(toIsoDate(min), toIsoDate(max))}
+        minWidth={minZoomWidth}
+        onCommit={commitRange}
       />
     );
   } else if (catalog.isPending || (primary !== undefined && overview.isPending)) {
@@ -261,39 +297,41 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
         )}
 
         <ChartSyncProvider>
-          <div className={styles.panels}>
-            {panels.map((panel) =>
-              panel.kind === "custom" ? (
-                <panel.Component
-                  key={panel.id}
-                  ctx={ctx}
-                  onShowSeries={(id) => actions.selectSeries([id])}
-                  className={LAYOUT_CLASS[panel.layout]}
-                />
-              ) : (
-                <DashboardPanel
-                  key={panel.id}
-                  panel={panel}
-                  ctx={ctx}
-                  status={tooLarge ? "success" : mainStatus}
-                  emptyMessage={tooLarge ? "Choose a shorter range to load this panel." : undefined}
-                  error={main.error}
-                  onRetry={() => void main.refetch()}
-                  isRefreshing={isRefreshing}
-                  footer={panel.layout === "primary" ? navigator : undefined}
-                  toolbar={
-                    panel.layout === "primary" ? (
-                      <TransformEditor
-                        transforms={state.transforms}
-                        onChange={actions.setTransforms}
-                        frequency={frequency}
-                      />
-                    ) : undefined
-                  }
-                />
-              ),
-            )}
-          </div>
+          <RangeGesturesProvider value={gestures}>
+            <div className={styles.panels}>
+              {panels.map((panel) =>
+                panel.kind === "custom" ? (
+                  <panel.Component
+                    key={panel.id}
+                    ctx={ctx}
+                    onShowSeries={(id) => actions.selectSeries([id])}
+                    className={LAYOUT_CLASS[panel.layout]}
+                  />
+                ) : (
+                  <DashboardPanel
+                    key={panel.id}
+                    panel={panel}
+                    ctx={ctx}
+                    status={tooLarge ? "success" : mainStatus}
+                    emptyMessage={tooLarge ? "Choose a shorter range to load this panel." : undefined}
+                    error={main.error}
+                    onRetry={() => void main.refetch()}
+                    isRefreshing={isRefreshing}
+                    footer={panel.layout === "primary" ? navigator : undefined}
+                    toolbar={
+                      panel.layout === "primary" ? (
+                        <TransformEditor
+                          transforms={state.transforms}
+                          onChange={actions.setTransforms}
+                          frequency={frequency}
+                        />
+                      ) : undefined
+                    }
+                  />
+                ),
+              )}
+            </div>
+          </RangeGesturesProvider>
         </ChartSyncProvider>
       </div>
 

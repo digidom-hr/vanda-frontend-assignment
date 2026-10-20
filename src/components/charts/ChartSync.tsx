@@ -2,6 +2,7 @@
 
 import type { HighchartsReactRefObject } from "@highcharts/react/Stock";
 import { createContext, useContext, useMemo, useRef, type ReactNode } from "react";
+import type { Span } from "@/lib/range-gestures";
 
 type Chart = HighchartsReactRefObject["chart"];
 
@@ -10,6 +11,15 @@ export interface ChartSync {
   register(chart: Chart): () => void;
   /** The pointer is at `x` in `source` (null: it left); mirror it in the other charts. */
   hover(source: Chart, x: number | null): void;
+  /**
+   * Shows `range` in every chart (and anything listening, like the navigator)
+   * while a zoom or pan is under way. The page's range is committed once, when
+   * the gesture ends: redrawing the charts directly is cheap, re-rendering
+   * every panel on each frame isn't.
+   */
+  preview(range: Span): void;
+  /** Calls `listener` with each previewed range; returns the function that stops it. */
+  onPreview(listener: (range: Span) => void): () => void;
 }
 
 const ChartSyncContext = createContext<ChartSync | null>(null);
@@ -46,9 +56,10 @@ export function showCrosshairAt(chart: Chart, x: number | null): void {
   if (nearest) axis.drawCrosshair(undefined, nearest);
 }
 
-/** Groups the charts of one page so hovering a date in one marks it in all. */
+/** Groups the charts of one page so hovering a date in one marks it in all, and a zoom or pan moves all. */
 export function ChartSyncProvider({ children }: { children: ReactNode }) {
   const charts = useRef(new Set<Chart>());
+  const listeners = useRef(new Set<(range: Span) => void>());
   const sync = useMemo<ChartSync>(
     () => ({
       register(chart) {
@@ -59,6 +70,21 @@ export function ChartSyncProvider({ children }: { children: ReactNode }) {
       },
       hover(source, x) {
         for (const chart of charts.current) if (chart !== source) showCrosshairAt(chart, x);
+      },
+      preview(range) {
+        for (const chart of charts.current) {
+          // The tooltip and crosshairs mark a date at its old position; clear
+          // them while the range moves (the next pointer move brings them back).
+          chart.pointer?.reset(false, 0);
+          chart.xAxis?.[0]?.setExtremes(range.min, range.max, true, false);
+        }
+        for (const listener of listeners.current) listener(range);
+      },
+      onPreview(listener) {
+        listeners.current.add(listener);
+        return () => {
+          listeners.current.delete(listener);
+        };
       },
     }),
     [],

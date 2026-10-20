@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import type { Span } from "@/lib/range-gestures";
 import type { RangeNavigatorProps } from "./RangeNavigator";
 import { RangeNavigator } from "./RangeNavigator";
 
@@ -16,6 +17,7 @@ vi.mock("./RangeNavigator.client", () => ({
 const DAY = 86_400_000;
 const t = Array.from({ length: 10 }, (_, i) => Date.UTC(2025, 0, 1) + i * DAY); // 1..10 Jan
 const values = t.map((_, i) => 100 + i);
+const keep = (range: Span) => range;
 
 describe("RangeNavigator", () => {
   it("states the period in dates and data points, for everyone", async () => {
@@ -24,7 +26,8 @@ describe("RangeNavigator", () => {
         t={t}
         values={values}
         range={{ min: Date.UTC(2025, 0, 3), max: Date.UTC(2025, 0, 7) }}
-        onCommit={() => {}}
+        onCommit={keep}
+        minWidth={DAY}
         label="Time range for Acme Corp"
       />,
     );
@@ -34,13 +37,14 @@ describe("RangeNavigator", () => {
   });
 
   it("passes the user's range on", async () => {
-    const onCommit = vi.fn();
+    const onCommit = vi.fn(keep);
     render(
       <RangeNavigator
         t={t}
         values={values}
         range={{ min: t[0] as number, max: t[9] as number }}
         onCommit={onCommit}
+        minWidth={DAY}
         label="Range"
       />,
     );
@@ -54,7 +58,8 @@ describe("RangeNavigator", () => {
         t={t}
         values={values}
         range={{ min: t[2] as number, max: t[6] as number }}
-        onCommit={() => {}}
+        onCommit={keep}
+        minWidth={DAY}
         label="Range"
       />,
     );
@@ -67,13 +72,14 @@ describe("RangeNavigator", () => {
   });
 
   it("moves one edge by one data point per arrow key, leaving the other where it is", async () => {
-    const onCommit = vi.fn();
+    const onCommit = vi.fn(keep);
     render(
       <RangeNavigator
         t={t}
         values={values}
         range={{ min: t[2] as number, max: t[6] as number }}
         onCommit={onCommit}
+        minWidth={DAY}
         label="Range"
       />,
     );
@@ -88,7 +94,7 @@ describe("RangeNavigator", () => {
 
   it("shows nothing for fewer than two points", () => {
     const { container } = render(
-      <RangeNavigator t={[1]} values={[1]} range={{ min: 1, max: 1 }} onCommit={() => {}} label="Range" />,
+      <RangeNavigator t={[1]} values={[1]} range={{ min: 1, max: 1 }} onCommit={keep} minWidth={DAY} label="Range" />,
     );
     expect(container).toBeEmptyDOMElement();
   });

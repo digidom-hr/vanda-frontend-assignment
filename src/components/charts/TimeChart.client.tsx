@@ -9,6 +9,7 @@ import { useChartSync } from "./ChartSync";
 import { useChartTokens, useReducedMotion } from "./chart-tokens";
 import type { TimeChartProps } from "./TimeChart";
 import styles from "./TimeChart.module.css";
+import { useChartGestures } from "./useChartGestures";
 
 /** The Highcharts-backed chart. Loaded lazily and only in the browser; use `TimeChart`. */
 export default function TimeChartClient({ spec }: TimeChartProps) {
@@ -22,6 +23,9 @@ export default function TimeChartClient({ spec }: TimeChartProps) {
     const chart = ref.current?.chart;
     return sync && chart ? sync.register(chart) : undefined;
   }, [sync]);
+
+  // Drag, pinch and Ctrl + wheel move the page's range rather than this chart alone.
+  useChartGestures(ref, sync);
 
   // Highcharts passes the chart the pointer is in, so no ref is read here.
   const options = useMemo(

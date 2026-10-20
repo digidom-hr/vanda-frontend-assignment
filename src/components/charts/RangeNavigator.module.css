@@ -59,7 +59,27 @@
   box-shadow: var(--focus-ring);
 }
 
-.caption {
+/* The period on the left; on pointer devices, the gesture hint on the right (it wraps below when narrow). */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 var(--space-4);
+}
+
+.caption,
+.hint {
   color: var(--color-graphite);
   font-size: var(--text-xs);
+}
+
+/* Touch has no wheel or drag-to-pan here (a finger scrolls the page): no hint. */
+.hint {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hint {
+    display: block;
+  }
 }

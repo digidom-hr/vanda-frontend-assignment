@@ -21,9 +21,14 @@ vi.mock("@/components/charts/TimeChart", () => ({
 // The navigator is Highcharts; here a stand-in reports a range like it does.
 vi.mock("@/components/charts/RangeNavigator.client", () => ({
   default: ({ onCommit }: { onCommit: (range: { min: number; max: number }) => void }) => (
-    <button type="button" onClick={() => onCommit({ min: Date.UTC(2025, 11, 30), max: Date.UTC(2025, 11, 31) })}>
-      Pick 30 to 31 Dec
-    </button>
+    <>
+      <button type="button" onClick={() => onCommit({ min: Date.UTC(2025, 11, 31), max: Date.UTC(2025, 11, 31, 12) })}>
+        Pick 31 Dec
+      </button>
+      <button type="button" onClick={() => onCommit({ min: Date.UTC(2025, 11, 30, 9), max: Date.UTC(2025, 11, 31) })}>
+        Pick 30 to 31 Dec
+      </button>
+    </>
   ),
 }));
 
@@ -106,9 +111,17 @@ describe("ServiceDashboard", () => {
     const navigator = await within(price).findByRole("group", { name: "Time range for Acme Corp (ACMC)" });
     expect(within(navigator).getByText("30 Dec 2025 to 31 Dec 2025, 2 data points")).toBeInTheDocument();
 
-    await user.click(await within(navigator).findByRole("button", { name: "Pick 30 to 31 Dec" }));
+    await user.click(await within(navigator).findByRole("button", { name: "Pick 31 Dec" }));
     const params = onUrlUpdate.mock.calls.at(-1)?.[0].searchParams;
-    expect([params?.get("from"), params?.get("to")]).toEqual(["2025-12-30", "2025-12-31"]);
+    expect([params?.get("from"), params?.get("to")]).toEqual(["2025-12-31", "2025-12-31"]);
+  });
+
+  it("leaves the URL alone when a zoom or pan lands on the days already shown", async () => {
+    const { onUrlUpdate, user } = setup();
+    const navigator = await screen.findByRole("group", { name: "Time range for Acme Corp (ACMC)" });
+    // 30 to 31 Dec is the whole (two-day) history: a drag at its end changes nothing.
+    await user.click(await within(navigator).findByRole("button", { name: "Pick 30 to 31 Dec" }));
+    expect(onUrlUpdate).not.toHaveBeenCalled();
   });
 
   it("opens the series a search result linked to", async () => {
