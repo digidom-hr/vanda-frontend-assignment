@@ -116,6 +116,26 @@ test.describe("service dashboard", () => {
     await expect(page).toHaveURL(/\?series=A-0020$/);
   });
 
+  test("every chart follows the page's range: the wheel scrolls the page instead of zooming a chart", async ({
+    page,
+  }) => {
+    await page.goto("/alpha?series=A-0001");
+    await waitForCharts(page);
+    const price = page.getByRole("region", { name: "Price" });
+    const firstLabel = () => price.locator(".highcharts-xaxis-labels").first().locator("text").first().textContent();
+    const before = await firstLabel();
+
+    const plot = (await price.locator(".highcharts-plot-background").first().boundingBox())!;
+    await page.mouse.move(plot.x + plot.width / 2, plot.y + plot.height / 2);
+    await page.mouse.wheel(0, 300);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    expect(await firstLabel()).toBe(before); // not zoomed
+
+    // A range chosen for the page reaches this chart too.
+    await page.getByRole("radio", { name: "Last 3 months" }).click();
+    await expect.poll(firstLabel).not.toBe(before);
+  });
+
   test("compares series rebased to 100", async ({ page }) => {
     await page.goto("/alpha?series=A-0001&range=3M");
     await waitForCharts(page);

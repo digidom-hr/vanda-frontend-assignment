@@ -32,5 +32,16 @@ export default function TimeChartClient({ spec }: TimeChartProps) {
       }),
     [spec, tokens, reducedMotion, sync],
   );
+  // The page's range always wins: re-apply it whenever it changes. Updating
+  // the axis options alone isn't enough, because Highcharts keeps a range the
+  // chart itself zoomed to (user extremes) over the options.
+  const rangeMin = spec.range?.min;
+  const rangeMax = spec.range?.max;
+  useEffect(() => {
+    const axis = ref.current?.chart?.xAxis[0];
+    if (!axis || rangeMin === undefined || rangeMax === undefined) return;
+    axis.setExtremes(rangeMin, rangeMax, true, false);
+  }, [rangeMin, rangeMax]);
+
   return <StockChart ref={ref} options={options} containerProps={{ className: styles.container }} />;
 }
