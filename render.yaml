@@ -1,0 +1,30 @@
+# Render blueprint for the mock API, which runs unchanged (`npm run api`).
+# The Next.js app is deployed on Vercel and reaches this service through
+# its MOCK_API_URL environment variable.
+#
+# Free plan: the service sleeps after 15 idle minutes and takes about a
+# minute to wake. To stay always on, change `plan` to `starter` (paid) and
+# remove the external keep-alive monitor described in the README.
+services:
+  - type: web
+    name: vanda-mock-api
+    runtime: node
+    plan: free
+    # Reviewers are in London and Render has no UK region; Frankfurt is the
+    # closest. Vercel functions run in fra1 too, so BFF calls stay in one city.
+    region: frankfurt
+    # The mock API has no dependencies, so there is nothing to install.
+    buildCommand: node --version
+    startCommand: npm run api
+    # Small response, and it only succeeds once the datasets are loaded.
+    healthCheckPath: /charlie/latest
+    # Redeploying restarts the API (and its slow start), so skip deploys for
+    # commits that only touch the web app.
+    buildFilter:
+      paths:
+        - mock-api/**
+        - package.json
+        - render.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
