@@ -11,7 +11,7 @@ server layer, owned by the frontend team, because of what the data looks like:
 | Concern       | Without this layer                                                 | With it                                                                 |
 | ------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | Pagination    | The browser loops over pages (11 requests for one 5-minute series) | One request; pages are read in parallel server-side                     |
-| Payload       | Raw rows: about 24 MB for the 5-minute series                      | Columnar, only the requested fields: 3–6x smaller                       |
+| Payload       | Raw rows: about 24 MB for the 5-minute series                      | Columnar, only the requested fields: 3–11x smaller (measured)           |
 | Data shapes   | Every component handles three row formats                          | One shape (`SeriesColumns`), validated once                             |
 | Search        | Three services that match and sort differently                     | One matcher and ranking over cached catalogs                            |
 | Failures      | Each component interprets upstream errors                          | Typed errors, one response format, stale catalogs served during outages |
