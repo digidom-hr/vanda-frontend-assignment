@@ -4,9 +4,16 @@ import { useId, useState, type ReactNode } from "react";
 import type { TableData } from "@/components/charts/chart-table";
 import { SegmentedControl } from "@/components/controls/SegmentedControl";
 import { ApiError } from "@/lib/api-client";
+import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { DataTable } from "./DataTable";
 import styles from "./Panel.module.css";
 import { PanelErrorBoundary } from "./PanelErrorBoundary";
+
+/** After this long, a loading panel explains itself (e.g. a data service waking up). */
+export const SLOW_LOAD_MS = 5000;
+
+export const SLOW_LOAD_MESSAGE =
+  "Still loading. If the data service has been idle, it can take up to a minute to start.";
 
 export interface PanelProps {
   readonly title: string;
@@ -26,6 +33,11 @@ export interface PanelProps {
   readonly isRefreshing?: boolean;
   /** Enables the Chart/Table switch. */
   readonly table?: TableData;
+  /**
+   * Explain a load that takes longer than SLOW_LOAD_MS. Pages that show one
+   * page-level message for all their panels turn this off.
+   */
+  readonly explainSlowLoad?: boolean;
   /** Height reserved in every state, so the layout never jumps. */
   readonly bodyHeight: number;
   readonly variant?: "primary" | "secondary";
@@ -58,6 +70,7 @@ export function Panel({
   emptyMessage = "No data in this range. Choose a longer range.",
   isRefreshing,
   table,
+  explainSlowLoad = true,
   bodyHeight,
   variant = "secondary",
   className,
@@ -67,6 +80,7 @@ export function Panel({
   const headingId = useId();
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const showTable = view === "table" && table !== undefined && status === "success" && !isEmpty;
+  const slow = useDelayedFlag(explainSlowLoad && status === "pending", SLOW_LOAD_MS);
 
   const failure = (message: string, retry?: () => void) => (
     <div className={styles.state} role="alert">
@@ -83,7 +97,13 @@ export function Panel({
   if (status === "pending") {
     body = (
       <div className={styles.loading} aria-busy="true">
-        <span className="visually-hidden">Loading {title}</span>
+        {slow ? (
+          <p className={styles.slow} role="status">
+            {SLOW_LOAD_MESSAGE}
+          </p>
+        ) : (
+          <span className="visually-hidden">Loading {title}</span>
+        )}
       </div>
     );
   } else if (status === "error") {

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { TableData } from "@/components/charts/chart-table";
@@ -42,6 +42,18 @@ describe("Panel", () => {
     expect(screen.getByText("Loading Price")).toBeInTheDocument();
     expect(screen.queryByText("chart")).not.toBeInTheDocument();
     expect(container.querySelector("[style*='min-height: 200px']")).not.toBeNull();
+  });
+
+  it("explains a load that takes longer than usual", () => {
+    vi.useFakeTimers();
+    try {
+      renderPanel({ status: "pending" });
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      act(() => vi.advanceTimersByTime(5000));
+      expect(screen.getByRole("status")).toHaveTextContent("it can take up to a minute to start");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("shows the server's message and offers a retry for retryable errors", async () => {

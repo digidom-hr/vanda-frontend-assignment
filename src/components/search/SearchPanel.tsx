@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Autocomplete, Button, Input, ListBox, ListBoxItem, SearchField } from "react-aria-components";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { useSearch } from "@/hooks/useSearch";
 import { ApiError } from "@/lib/api-client";
 import { formatFacetValue } from "@/lib/format";
@@ -54,6 +55,7 @@ export function SearchPanel({ variant, onNavigate }: SearchPanelProps) {
   const { data, error, isFetching, refetch } = useSearch(query);
 
   const active = input.trim().length > 0;
+  const slow = useDelayedFlag(active && !data && !error, 5000);
   const results = active && data ? data.results : [];
   const unavailable = data?.services.filter((s) => s.status !== "ok").map((s) => serviceLabel(s.service)) ?? [];
   const settled = active && data !== undefined && !isFetching && data.query === input.trim();
@@ -112,7 +114,13 @@ export function SearchPanel({ variant, onNavigate }: SearchPanelProps) {
           </p>
         )}
 
-        {active && !data && !error && <p className={styles.status}>Searching</p>}
+        {active && !data && !error && (
+          <p className={styles.status} role="status">
+            {slow
+              ? "Still searching. If the data services have been idle, they can take up to a minute to start."
+              : "Searching"}
+          </p>
+        )}
 
         {active && data && (
           <ListBox
