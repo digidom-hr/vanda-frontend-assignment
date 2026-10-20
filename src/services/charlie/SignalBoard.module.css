@@ -34,10 +34,10 @@
   background: var(--color-surface-hover);
 }
 
+/* The shown series: the purple bar and background, not bold, so rows keep their height. */
 .row[data-shown] {
   border-left-color: var(--color-accent);
   background: var(--color-surface-hover);
-  font-weight: var(--weight-semibold);
 }
 
 .row[data-focus-visible] {

@@ -1,12 +1,18 @@
 .picker {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: var(--space-2);
   min-height: 0;
 }
 
 .filter {
   display: flex;
+}
+
+/* How the two parts of a row differ: the name shows, the box compares. */
+.hint {
+  color: var(--color-graphite);
+  font-size: var(--text-xs);
 }
 
 .filterInput {
@@ -60,25 +66,31 @@
   font-weight: var(--weight-semibold);
 }
 
+/*
+ * A row has two parts: the checkbox strip on the left (compare) and the name
+ * (show this series). A hairline divides them, and hairlines divide rows.
+ */
 .item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-areas:
     "check name"
     "check meta";
-  column-gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
   border-left: 2px solid transparent;
   border-radius: 0 var(--radius-control) var(--radius-control) 0;
   cursor: pointer;
   outline: none;
 }
 
+.item + .item {
+  border-top: 1px solid var(--color-grid);
+}
+
 .item[data-hovered] {
   background: var(--color-surface-hover);
 }
 
-/* The series currently shown: a purple bar, like Vanda's active navigation item. */
+/* The series currently shown: a purple bar, like Vanda's active navigation item. Not bold: rows keep their height. */
 .item[data-primary] {
   border-left-color: var(--color-accent);
   background: var(--color-surface-hover);
@@ -90,33 +102,51 @@
 
 .name {
   grid-area: name;
+  padding: var(--space-2) var(--space-2) 0 var(--space-3);
   font-size: var(--text-sm);
   overflow-wrap: anywhere;
 }
 
-.item[data-primary] .name {
-  font-weight: var(--weight-semibold);
-}
-
 .meta {
   grid-area: meta;
+  padding: 0 var(--space-2) var(--space-2) var(--space-3);
   color: var(--color-graphite);
   font-size: var(--text-xs);
 }
 
+/*
+ * The checkbox's target is the row's whole left strip (full height, 32px
+ * wide), not only the square: before, a click beside the box landed on the
+ * row and replaced the selection instead of adding to it.
+ */
 .checkbox {
   grid-area: check;
-  align-self: start;
-  padding-top: 3px;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--space-2);
+  border-right: 1px solid var(--color-grid);
+  cursor: pointer;
+}
+
+.checkbox[data-hovered]:not([data-disabled]) {
+  background: var(--color-accent-wash);
+}
+
+.checkbox[data-hovered]:not([data-disabled]) .box {
+  border-color: var(--color-accent);
+}
+
+.checkbox[data-disabled] {
+  cursor: not-allowed;
 }
 
 .box {
   display: grid;
   place-items: center;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border: 1.5px solid var(--color-graphite);
-  border-radius: 3px;
+  border-radius: 4px;
   color: transparent;
 }
 
@@ -148,19 +178,24 @@
 
 .placeholderItem {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
+  border-left: 2px solid transparent;
+}
+
+.placeholderItem + .placeholderItem {
+  border-top: 1px solid var(--color-grid);
 }
 
 .placeholderItem > :first-child {
   flex: none;
-  margin-top: 3px;
+  align-self: center;
+  margin-inline: var(--space-2);
 }
 
 .placeholderText {
   display: grid;
   flex: 1;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  border-left: 1px solid var(--color-grid);
 }
 
 .placeholderName {

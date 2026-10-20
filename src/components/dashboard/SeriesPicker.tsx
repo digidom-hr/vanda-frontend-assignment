@@ -97,6 +97,7 @@ export function SeriesPicker({
       <SearchField aria-label={`Filter ${label}`} value={filter} onChange={setFilter} className={styles.filter}>
         <Input className={styles.filterInput} placeholder={`Filter ${series.length} series`} />
       </SearchField>
+      <p className={styles.hint}>Click a name to show it. Tick to compare up to {maxSelected}.</p>
 
       <GridList
         aria-label={label}
@@ -134,7 +135,7 @@ export function SeriesPicker({
                         onChange={() => onToggleCompare(s.id)}
                       >
                         <span className={styles.box} aria-hidden="true">
-                          <Icon name="check" size={10} weight={1.75} />
+                          <Icon name="check" size={12} weight={2} />
                         </span>
                       </Checkbox>
                       <span className={styles.name}>
@@ -167,6 +168,9 @@ export function SeriesPickerSkeleton({ label }: { label: string }) {
     <div className={styles.picker} aria-busy="true">
       <span className="visually-hidden">Loading {label}</span>
       <Skeleton height="var(--control-height)" />
+      <span className={styles.hint}>
+        <Skeleton tone="text" width="85%" />
+      </span>
       <div className={styles.placeholderList}>
         {PLACEHOLDER_GROUPS.map((rows, g) => (
           <div key={g}>
@@ -175,7 +179,7 @@ export function SeriesPickerSkeleton({ label }: { label: string }) {
             </div>
             {rows.map((width, r) => (
               <div key={r} className={styles.placeholderItem}>
-                <Skeleton width={14} height={14} radius={3} />
+                <Skeleton width={16} height={16} radius={4} />
                 <span className={styles.placeholderText}>
                   <span className={styles.placeholderName}>
                     <Skeleton tone="text" width={width} />

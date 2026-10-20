@@ -19,7 +19,7 @@ export const SERVICE_TOUR: readonly TourStep[] = [
   {
     targets: ["picker", "picker-mobile"],
     title: "Pick and compare series",
-    text: "Choose a series to chart. Tick up to six to compare them, rebased to 100.",
+    text: "Click a name to show that series. Tick the box beside it to add it to a comparison: up to six, rebased to 100.",
   },
   {
     targets: ["view-controls"],

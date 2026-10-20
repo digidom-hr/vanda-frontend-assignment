@@ -99,6 +99,23 @@ test.describe("service dashboard", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lumen Technologies (LUMT)");
   });
 
+  test("ticks a series into the comparison from anywhere left of its name", async ({ page }) => {
+    await page.goto("/alpha?series=A-0001");
+    await waitForCharts(page);
+    // Near the row's left edge, beside the small square: this used to replace the selection.
+    const row = (await page.getByRole("row", { name: /Lumen Technologies/ }).boundingBox())!;
+    await page.mouse.click(row.x + 6, row.y + row.height - 6);
+    await expect(page.getByText("Comparing 2 series")).toBeVisible();
+    expect(search(page)).toBe("?series=A-0001,A-0013");
+
+    // The name still shows that series on its own.
+    await page
+      .getByRole("row", { name: /Summit Software/ })
+      .getByText("Summit Software (SUMS)")
+      .click();
+    await expect(page).toHaveURL(/\?series=A-0020$/);
+  });
+
   test("compares series rebased to 100", async ({ page }) => {
     await page.goto("/alpha?series=A-0001&range=3M");
     await waitForCharts(page);
