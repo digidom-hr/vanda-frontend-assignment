@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import ServicePage, { generateMetadata, generateStaticParams } from "./page";
 
 // The dashboard has its own tests; here we only check the page wires it up.
-vi.mock("@/components/dashboard/ServiceDashboard", () => ({
+vi.mock("@/features/dashboard/ServiceDashboard", () => ({
   ServiceDashboard: ({ serviceId }: { serviceId: string }) => <p>Dashboard for {serviceId}</p>,
   ServiceDashboardSkeleton: ({ serviceId }: { serviceId: string }) => <p>Loading {serviceId}</p>,
 }));

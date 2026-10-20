@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PanelContext } from "@/components/dashboard/panels";
+import type { PanelContext } from "@/features/dashboard/panels";
 import { getService } from "@/services/registry";
 import { charlieDashboard } from "./dashboard";
 

@@ -9,7 +9,7 @@ import {
   type ServiceAdapter,
 } from "@/server/adapter-kit";
 import { UpstreamError } from "@/server/errors";
-import type { SeriesMeta } from "../types";
+import type { SeriesMeta } from "@/services/types";
 import { bravoMeta } from "./meta";
 
 const FIELD_KEYS: readonly string[] = bravoMeta.fields.map((f) => f.key);

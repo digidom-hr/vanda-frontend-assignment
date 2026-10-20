@@ -1,7 +1,7 @@
-import { ServiceCards } from "@/components/home/ServiceCards";
-import { Icon, type IconName } from "@/components/icons/Icon";
-import { SearchPanel } from "@/components/search/SearchPanel";
-import { PageTransition } from "@/components/shell/PageTransition";
+import { ServiceCards } from "@/features/home/ServiceCards";
+import { Icon, type IconName } from "@/ui/Icon";
+import { SearchPanel } from "@/features/search/SearchPanel";
+import { PageTransition } from "@/features/shell/PageTransition";
 import styles from "./page.module.css";
 
 const FEATURES: { icon: IconName; title: string; text: string }[] = [

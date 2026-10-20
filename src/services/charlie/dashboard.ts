@@ -1,4 +1,4 @@
-import { primaryPanel, type DashboardConfig } from "@/components/dashboard/panels";
+import { primaryPanel, type DashboardConfig } from "@/features/dashboard/panels";
 import { formatNumber } from "@/lib/format";
 import { CHARLIE_SIGNAL_THRESHOLD } from "./meta";
 import { SignalBoard } from "./SignalBoard";

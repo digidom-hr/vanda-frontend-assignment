@@ -52,14 +52,24 @@ Next.js route handlers: a thin backend-for-frontend inside the app
 Mock API (unchanged)
 ```
 
-| Folder            | Contents                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------------------- |
-| `src/app/`        | Pages (`/`, `/[service]`) and API routes (`/api/...`)                                                   |
-| `src/services/`   | One folder per data service: metadata, upstream adapter, page definition                                |
-| `src/server/`     | Server-only code: upstream client, catalog cache, error mapping ([why it exists](src/server/README.md)) |
-| `src/lib/`        | Plain TypeScript: transforms, search ranking, URL state rules, formatting                               |
-| `src/components/` | UI: shell, search, charts, panels, controls, the generic service dashboard                              |
-| `src/styles/`     | `tokens.css` holds the whole visual language; components only use its variables                         |
+Organised by feature: each part of the product keeps its components, hooks and logic together, and widgets shared by several features live in `ui/`.
+
+| Folder                    | Contents                                                                                                  |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `src/app/`                | Routes only: pages (`/`, `/[service]`) and API route handlers (`/api/...`)                                |
+| `src/features/shell/`     | App frame: header, service navigation, theme, page transitions, providers                                 |
+| `src/features/home/`      | Home page: service cards with their mini charts                                                           |
+| `src/features/search/`    | Global search: header dialog, results, highlighting                                                       |
+| `src/features/dashboard/` | The generic service page: series picker, view controls, transform editor, page rules and URL state        |
+| `src/features/charts/`    | Highcharts wrapper, theme, range navigator, zoom and pan, Link hover                                      |
+| `src/features/tour/`      | Onboarding tour                                                                                           |
+| `src/ui/`                 | Reusable widgets with no product knowledge: panel frame, table, segmented control, switch, skeleton, icon |
+| `src/data/`               | The browser's data layer: API client, TanStack Query setup and hooks, chunked loading                     |
+| `src/services/`           | One folder per data service: metadata, upstream adapter, page definition                                  |
+| `src/server/`             | Server-only code: upstream client, catalog cache, error mapping ([why it exists](src/server/README.md))   |
+| `src/lib/`                | Plain TypeScript shared by browser and server: transforms, search ranking, formatting, dates              |
+| `src/hooks/`              | General React hooks (debounce, delayed flag)                                                              |
+| `src/styles/`             | `tokens.css` holds the whole visual language; components only use its variables                           |
 
 ### Adding a service
 
