@@ -51,6 +51,18 @@
   --color-on-accent: light-dark(#ffffff, #1a0829); /* text on accent fills */
   --color-accent-wash: light-dark(rgb(99 25 161 / 0.12), rgb(195 155 236 / 0.2)); /* selected period, matches */
 
+  /*
+   * Colour: the home page's hero band, Vanda's deep purple (--vanda-purple-950)
+   * with the soft purple-500 glow of their own hero. Dark in both themes; in
+   * dark mode a step lighter so it still stands apart from the page.
+   */
+  --color-hero: light-dark(#1a0829, #241038);
+  --color-hero-glow: rgb(139 79 196 / 0.45);
+  --color-on-hero: #ffffff;
+  --color-on-hero-muted: rgb(255 255 255 / 0.75);
+  --color-on-hero-rule: rgb(255 255 255 / 0.35);
+  --color-on-hero-wash: rgb(255 255 255 / 0.1);
+
   /* Colour: the logo, exactly as Vanda's two logo files (vanda-logo.svg / vanda-logo-white.svg) */
   --color-brand-mark: light-dark(#6319a1, #c39bec);
   --color-brand-wordmark: light-dark(#3d3d3d, #ffffff);
@@ -107,6 +119,7 @@
   --text-md: 1rem; /* 16px */
   --text-lg: 1.3125rem; /* 21px */
   --text-xl: 1.75rem; /* 28px */
+  --text-2xl: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem); /* 28-40px: the home page's headline */
 
   --leading-tight: 1.2;
   --leading-base: 1.45;

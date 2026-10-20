@@ -48,8 +48,11 @@ function listNames(names: string[]): string {
 }
 
 export interface SearchPanelProps {
-  /** `dialog`: inside the ⌘K dialog (focused, scrolling list). `inline`: embedded in a page. */
-  variant: "dialog" | "inline";
+  /**
+   * `dialog`: inside the ⌘K dialog (focused, scrolling list). `inline`: embedded in a page.
+   * `hero`: embedded on a dark band; the page's own text introduces it, so the idle hint is left out.
+   */
+  variant: "dialog" | "inline" | "hero";
   /** Called when a result is chosen, e.g. to close the dialog. */
   onNavigate?: () => void;
 }
@@ -86,7 +89,9 @@ export function SearchPanel({ variant, onNavigate }: SearchPanelProps) {
 
         {!active && (
           <div className={styles.idle}>
-            <p>Search every series in Alpha, Bravo and Charlie by name, ticker, id, sector or region.</p>
+            {variant !== "hero" && (
+              <p>Search every series in Alpha, Bravo and Charlie by name, ticker, id, sector or region.</p>
+            )}
             <div className={styles.examples}>
               <span className={styles.examplesLabel}>Try</span>
               {EXAMPLES.map((example) => (
