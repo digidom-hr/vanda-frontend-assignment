@@ -34,11 +34,10 @@
   stroke: var(--color-accent);
 }
 
-/* Shown once a chart is zoomed or panned on its own: back to the page's period. */
+/* Shown once a chart is zoomed or panned on its own: back to the page's period.
+   Placed from the chart's plot area (inline top/right): below the legend, inside the plot's corner. */
 .reset {
   position: absolute;
-  top: var(--space-1);
-  right: var(--space-6);
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);

@@ -19,9 +19,19 @@ const DRAG_THRESHOLD_PX = 3;
 /** A zoom stops at about this many data points, whatever the frequency. */
 const MIN_ZOOM_POINTS = 8;
 
+export interface PlotCorner {
+  readonly top: number;
+  readonly right: number;
+}
+
 export interface ChartRange {
-  /** True while this chart shows its own zoom or pan instead of the page's range. */
-  readonly zoomed: boolean;
+  /**
+   * Where the plot's top-right corner is (px from the chart's top and right
+   * edges) while this chart shows its own zoom or pan; null when it shows the
+   * page's range. The reset button sits there: below the legend, however many
+   * lines it wraps to.
+   */
+  readonly zoomed: PlotCorner | null;
   /** Brings the chart back to the page's range. */
   readonly reset: () => void;
 }
@@ -38,7 +48,7 @@ export interface ChartRange {
  * touch: a finger on a chart scrolls the page too.
  */
 export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, range: Span | undefined): ChartRange {
-  const [zoomed, setZoomed] = useState(false);
+  const [zoomed, setZoomed] = useState<PlotCorner | null>(null);
   const rangeMin = range?.min;
   const rangeMax = range?.max;
 
@@ -54,7 +64,7 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
   const reset = useCallback(() => {
     const axis = ref.current?.chart?.xAxis[0];
     if (axis && rangeMin !== undefined && rangeMax !== undefined) axis.setExtremes(rangeMin, rangeMax, true, false);
-    setZoomed(false);
+    setZoomed(null);
   }, [ref, rangeMin, rangeMax]);
 
   useEffect(() => {
@@ -66,7 +76,15 @@ export function useChartRange(ref: RefObject<HighchartsReactRefObject | null>, r
     // Any range change that isn't this chart's own gesture (the page's range,
     // the navigator's live preview, a reset) means the chart is back in step.
     let ownGesture = false;
-    const removeExtremesListener = Highcharts.addEvent(axis, "afterSetExtremes", () => setZoomed(ownGesture));
+    const removeExtremesListener = Highcharts.addEvent(axis, "afterSetExtremes", () => {
+      if (!ownGesture) {
+        setZoomed(null);
+        return;
+      }
+      const corner = { top: chart.plotTop, right: chart.chartWidth - chart.plotLeft - chart.plotWidth };
+      // Same corner as before: keep the object, so a drag doesn't re-render on every frame.
+      setZoomed((prev) => (prev && prev.top === corner.top && prev.right === corner.right ? prev : corner));
+    });
 
     const session = createGestureSession(
       (span) => {
