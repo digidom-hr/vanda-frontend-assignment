@@ -75,7 +75,7 @@ export function panelAvailable(panel: PanelDefinition, ctx: Pick<PanelContext, "
 export interface DashboardConfig {
   /** Facet the series picker groups by. */
   readonly groupBy: string;
-  /** Field drawn in the overview (time rail); it also gives the data's time extent. */
+  /** Field drawn in the overview (the range navigator); it also gives the data's time extent. */
   readonly overviewField: string;
   readonly panels: readonly PanelDefinition[];
 }

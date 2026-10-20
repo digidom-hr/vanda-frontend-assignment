@@ -1,23 +1,15 @@
 /**
- * Window arithmetic for the time rail, in data-point indices so the window
- * always snaps to real timestamps (trading days, not calendar days).
+ * Window arithmetic for the range navigator, in data-point indices, so the
+ * caption and the keyboard controls work in real timestamps (trading days,
+ * not calendar days).
  */
 
-/** Index of the timestamp closest to `x` (t is ascending). */
-export function nearestIndex(t: readonly number[], x: number): number {
-  if (t.length === 0) return -1;
-  let lo = 0;
-  let hi = t.length - 1;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if ((t[mid] as number) < x) lo = mid + 1;
-    else hi = mid;
-  }
-  if (lo > 0 && x - (t[lo - 1] as number) < (t[lo] as number) - x) return lo - 1;
-  return lo;
-}
-
 const DAY_MS = 86_400_000;
+
+export interface IndexWindow {
+  readonly start: number;
+  readonly end: number;
+}
 
 /**
  * The points a time range covers: from the first point on or after the start
@@ -33,12 +25,7 @@ export function windowForRange(t: readonly number[], min: number, max: number): 
   return { start, end };
 }
 
-export interface IndexWindow {
-  readonly start: number;
-  readonly end: number;
-}
-
-/** The smallest window the rail allows, in points. */
+/** The smallest window, in points. */
 export const MIN_WINDOW_POINTS = 2;
 
 /** Moves the window by `delta` points, keeping its size and staying inside 0..last. */
@@ -55,8 +42,41 @@ export function resizeWindow(w: IndexWindow, edge: "start" | "end", index: numbe
   return { start: w.start, end: Math.max(Math.min(last, index), w.start + gap) };
 }
 
-/** Centres a window of the same size on `index`. */
-export function centreWindow(w: IndexWindow, index: number, last: number): IndexWindow {
-  const size = w.end - w.start;
-  return moveWindow(w, index - Math.round(size / 2) - w.start, last);
+/** Which part of the window a keyboard control moves: the whole period, or one edge. */
+export type WindowPart = "period" | "start" | "end";
+
+/**
+ * The window after a key press on one of the range's keyboard controls, or
+ * null for keys they don't handle. Arrows move one data point; Shift+arrows
+ * and Page Up/Down move `bigStep` points; Home and End go to the ends.
+ */
+export function windowForKey(
+  w: IndexWindow,
+  part: WindowPart,
+  key: string,
+  shiftKey: boolean,
+  last: number,
+  bigStep: number,
+): IndexWindow | null {
+  const step = shiftKey ? bigStep : 1;
+  const deltas: Record<string, number> = {
+    ArrowLeft: -step,
+    ArrowDown: -step,
+    ArrowRight: step,
+    ArrowUp: step,
+    PageDown: -bigStep,
+    PageUp: bigStep,
+  };
+  const delta = deltas[key];
+  if (delta !== undefined) {
+    if (part === "period") return moveWindow(w, delta, last);
+    return resizeWindow(w, part, (part === "start" ? w.start : w.end) + delta, last);
+  }
+  if (key === "Home" || key === "End") {
+    const toEnd = key === "End";
+    if (part === "period") return moveWindow(w, toEnd ? last : -last, last);
+    if (part === "start") return resizeWindow(w, "start", toEnd ? w.end : 0, last);
+    return resizeWindow(w, "end", toEnd ? last : w.start, last);
+  }
+  return null;
 }

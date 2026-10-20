@@ -1,0 +1,65 @@
+.wrap {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.frame {
+  position: relative;
+  min-width: 0;
+}
+
+.container {
+  width: 100%;
+  height: 100%;
+}
+
+/* The standalone navigator always creates a scrollbar; it is 1px tall (see navigator-options) and isn't drawn. */
+.container :global(.highcharts-scrollbar) {
+  display: none;
+}
+
+/* Handles say they can be dragged sideways. */
+.container :global(.highcharts-navigator-handle) {
+  cursor: ew-resize;
+}
+
+/*
+ * The keyboard layer sits exactly over Highcharts' plot (its position comes
+ * from the chart). Its sliders are invisible and let the pointer through; a
+ * focused slider draws the focus ring around the part it moves.
+ */
+.keys {
+  position: absolute;
+  top: 0;
+  pointer-events: none;
+}
+
+.period,
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  outline: none;
+}
+
+.period {
+  left: calc(var(--from) * 100%);
+  width: calc((var(--to) - var(--from)) * 100%);
+}
+
+.handle {
+  left: calc(var(--at) * 100%);
+  width: 24px;
+  margin-left: -12px;
+}
+
+.period:focus-visible,
+.handle:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.caption {
+  color: var(--color-graphite);
+  font-size: var(--text-xs);
+}

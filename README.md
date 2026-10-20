@@ -28,7 +28,7 @@ The app reads the API's address from `MOCK_API_URL` (default `http://localhost:4
 
 ## What's in it
 
-- **One route per service:** `/alpha`, `/bravo`, `/charlie`. Each page has a series picker, a time rail, frequency and range controls, and the panels that suit that service's data:
+- **One route per service:** `/alpha`, `/bravo`, `/charlie`. Each page has a series picker, frequency and range controls, a Highcharts navigator under the main chart that sets the period for every panel, and the panels that suit that service's data:
   - **Alpha (equities):** price, net order flow, score, momentum, and rank among the 40 companies.
   - **Bravo (investor flows):** net flow, gross flow, cumulative net flow, and net as a share of gross. USD and basis-point series never share an axis.
   - **Charlie (composite scores):** the score with labelled high and low thresholds, plus a signal board of every series' latest reading, grouped by category.
@@ -98,8 +98,8 @@ Then add one entry each to the registry, `ADAPTERS` and `DASHBOARDS`. Those maps
 ## Quality
 
 - **Tests:**
-  - 394 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
-  - 39 end-to-end tests (Playwright) against the real app and the unchanged mock API, on desktop and phone sizes, including simulated outages and slow loads;
+  - 396 unit and component tests (Vitest, Testing Library, and MSW for network fakes);
+  - 40 end-to-end tests (Playwright) against the real app and the unchanged mock API, on desktop and phone sizes, including simulated outages and slow loads;
   - axe accessibility audits of every page in light and dark mode.
 - **CI:** GitHub Actions runs `verify` and the end-to-end suite on every pull request and on `main`.
 - **Accessibility:**

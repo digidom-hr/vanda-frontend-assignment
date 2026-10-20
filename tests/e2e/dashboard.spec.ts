@@ -59,7 +59,28 @@ test.describe("service dashboard", () => {
     await expect(page.getByRole("region", { name: "Price" }).getByText(/indexed to 100/)).toBeVisible();
   });
 
-  test("the time rail drives every panel", async ({ page }) => {
+  test("dragging the navigator's period sets every panel's range, once, on release", async ({ page }) => {
+    await page.goto("/alpha?series=A-0001");
+    await waitForCharts(page);
+    const navigator = page.getByRole("group", { name: "Time range for Acme Corp (ACMC)" });
+    const period = navigator.locator(".highcharts-navigator-mask-inside");
+    await expect(period).toBeVisible();
+    const box = (await period.boundingBox())!;
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 - 200, box.y + box.height / 2, { steps: 10 });
+    // Nothing reloads mid-drag: the panels and the URL wait for the release.
+    expect(page.url()).not.toContain("from=");
+    await page.mouse.up();
+
+    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2}/);
+    const to = new URL(page.url()).searchParams.get("to") as string;
+    expect(to < "2025-12-01").toBe(true);
+    await expect(navigator.getByText(/data points/)).not.toContainText("to 31 Dec 2025");
+  });
+
+  test("the navigator's keyboard controls drive every panel", async ({ page }) => {
     await page.goto("/alpha?series=A-0001&range=6M");
     await waitForCharts(page);
     const end = page.getByRole("slider", { name: "End of period" });
@@ -82,7 +103,8 @@ test.describe("service dashboard", () => {
     await expect(table).toBeVisible();
     await expect(table.getByRole("rowheader").first()).toHaveText("31 Dec 2025");
     await score.getByRole("radio", { name: "Chart" }).click();
-    await expect(score.locator(".highcharts-root")).toBeVisible();
+    // The first drawing is the chart; the navigator under it is the second.
+    await expect(score.locator(".highcharts-root").first()).toBeVisible();
   });
 
   test("loads 5-minute data for the visible window only", async ({ page }) => {

@@ -7,6 +7,8 @@ const TOKENS: ChartTokens = {
   graphite: "rgb(91, 100, 114)",
   rule: "rgb(211, 220, 214)",
   grid: "rgb(227, 233, 229)",
+  highlighter: "rgb(242, 209, 58)",
+  highlighterWash: "rgba(242, 209, 58, 0.55)",
   fontFamily: "Archivo",
   colors: {
     "series-1": "#2a78d6",
@@ -137,7 +139,7 @@ describe("buildChartOptions", () => {
     expect(get(options, "yAxis", "plotLines", 0)).toMatchObject({ value: 0, width: 1 });
   });
 
-  it("turns off per-chart Stock chrome; the page has one shared time rail", () => {
+  it("turns off per-chart Stock chrome; the page has one shared navigator", () => {
     const options = buildChartOptions(spec(), TOKENS);
     expect([options.navigator?.enabled, options.scrollbar?.enabled, options.rangeSelector?.enabled]).toEqual([
       false,

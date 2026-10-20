@@ -53,7 +53,7 @@ export function RangeControl({
   onPreset,
 }: {
   preset: RangePreset;
-  /** A custom range (from the time rail) replaces the preset while set. */
+  /** A custom range (from the range navigator) replaces the preset while set. */
   from: string | null;
   to: string | null;
   onPreset: (preset: RangePreset) => void;

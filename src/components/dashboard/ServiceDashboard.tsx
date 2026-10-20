@@ -5,6 +5,7 @@ import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from "rea
 import { ChartSyncProvider } from "@/components/charts/ChartSync";
 import { chartTable } from "@/components/charts/chart-table";
 import type { ChartSpec } from "@/components/charts/chart-options";
+import { preloadRangeNavigator, RangeNavigator, RangeNavigatorSkeleton } from "@/components/charts/RangeNavigator";
 import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { Panel, SLOW_LOAD_MESSAGE, SLOW_LOAD_MS } from "@/components/panel/Panel";
@@ -29,7 +30,6 @@ import { DASHBOARDS } from "./configs";
 import { panelAvailable, type ChartPanelDefinition, type PanelContext, type PanelDefinition } from "./panels";
 import styles from "./ServiceDashboard.module.css";
 import { SeriesPicker, SeriesPickerSkeleton, type SeriesPickerProps } from "./SeriesPicker";
-import { TimeRail, TimeRailSkeleton } from "./TimeRail";
 import { TransformEditor } from "./TransformEditor";
 import { FrequencyControl, RangeControl } from "./ViewControls";
 
@@ -67,7 +67,10 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   const [state, actions] = useDashboardState(service);
 
   // Fetch the chart code in parallel with the data rather than after it.
-  useEffect(preloadTimeChart, []);
+  useEffect(() => {
+    preloadTimeChart();
+    preloadRangeNavigator();
+  }, []);
   const catalog = useSeriesList(serviceId);
 
   const selection = useMemo(
@@ -171,6 +174,22 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   const tooLarge = main.error instanceof ApiError && main.error.code === "too_large" && !main.data;
   const isRefreshing = main.isPlaceholderData || (main.isFetching && main.data !== undefined);
 
+  // The range control, under the primary chart: it sets the period for every panel.
+  let navigator: ReactNode = null;
+  if (overviewSeries && range) {
+    navigator = (
+      <RangeNavigator
+        label={`Time range for ${primary?.name ?? service.label}`}
+        t={overviewSeries.t}
+        values={overviewSeries.fields[config.overviewField] ?? []}
+        range={range}
+        onCommit={({ min, max }) => actions.setCustomRange(toIsoDate(min), toIsoDate(max))}
+      />
+    );
+  } else if (catalog.isPending || (primary !== undefined && overview.isPending)) {
+    navigator = <RangeNavigatorSkeleton />;
+  }
+
   return (
     <div className={styles.layout}>
       <aside className={styles.sidebar} aria-label={`${service.label} series`}>
@@ -217,18 +236,6 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           <RangeControl preset={state.preset} from={state.from} to={state.to} onPreset={actions.setPreset} />
         </div>
 
-        {overviewSeries && range ? (
-          <TimeRail
-            label={`Time range for ${primary?.name ?? service.label}`}
-            t={overviewSeries.t}
-            values={overviewSeries.fields[config.overviewField] ?? []}
-            range={range}
-            onCommit={({ min, max }) => actions.setCustomRange(toIsoDate(min), toIsoDate(max))}
-          />
-        ) : (
-          (catalog.isPending || (primary !== undefined && overview.isPending)) && <TimeRailSkeleton />
-        )}
-
         {tooLarge && (
           <div className={styles.notice} role="alert">
             <p>
@@ -267,6 +274,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
                   error={main.error}
                   onRetry={() => void main.refetch()}
                   isRefreshing={isRefreshing}
+                  footer={panel.layout === "primary" ? navigator : undefined}
                   toolbar={
                     panel.layout === "primary" ? (
                       <TransformEditor
@@ -295,6 +303,7 @@ function DashboardPanel({
   isRefreshing,
   emptyMessage,
   toolbar,
+  footer,
 }: {
   panel: ChartPanelDefinition;
   ctx: PanelContext | null;
@@ -304,6 +313,7 @@ function DashboardPanel({
   isRefreshing: boolean;
   emptyMessage?: string;
   toolbar?: ReactNode;
+  footer?: ReactNode;
 }) {
   const spec = useMemo(() => (ctx && status === "success" ? panel.build(ctx) : null), [ctx, panel, status]);
   const table = useMemo(() => (spec ? chartTable(spec) : undefined), [spec]);
@@ -319,6 +329,7 @@ function DashboardPanel({
       emptyMessage={emptyMessage}
       explainSlowLoad={false}
       toolbar={toolbar}
+      footer={footer}
       isRefreshing={isRefreshing}
       table={table}
       bodyHeight={panel.bodyHeight}
@@ -389,7 +400,6 @@ export function ServiceDashboardSkeleton({ serviceId }: { serviceId: ServiceId }
           <FrequencyControl frequencies={service.frequencies} value={resolveFrequency([], null)} onChange={noop} />
           <RangeControl preset={DEFAULT_RANGE} from={null} to={null} onPreset={noop} />
         </div>
-        <TimeRailSkeleton />
         <div className={styles.panels}>
           {config.panels.map((panel) =>
             panel.kind === "custom" ? (
@@ -409,6 +419,7 @@ export function ServiceDashboardSkeleton({ serviceId }: { serviceId: ServiceId }
                     <Skeleton width="6.75rem" height="1.75rem" radius="var(--radius-pill)" />
                   ) : undefined
                 }
+                footer={panel.layout === "primary" ? <RangeNavigatorSkeleton /> : undefined}
               >
                 {null}
               </Panel>

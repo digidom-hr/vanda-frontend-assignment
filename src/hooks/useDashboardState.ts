@@ -41,7 +41,7 @@ export interface DashboardState {
  *
  * History: choosing series pushes an entry, so Back returns to the previous
  * selection. Range, frequency and transform tweaks replace the current entry,
- * so dragging the time rail doesn't flood the history. URL writes are
+ * so using the range navigator doesn't flood the history. URL writes are
  * throttled while dragging.
  */
 export function useDashboardState(service: Pick<ServiceMeta, "frequencies">) {
