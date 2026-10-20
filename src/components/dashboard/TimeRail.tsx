@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { Skeleton } from "@/components/feedback/Skeleton";
 import { formatTimestamp } from "@/lib/format";
 import { centreWindow, moveWindow, nearestIndex, resizeWindow, windowForRange, type IndexWindow } from "@/lib/rail";
 import styles from "./TimeRail.module.css";
@@ -240,6 +241,18 @@ export function TimeRail({ t, values, range, onCommit, label = "Time range" }: T
       <p className={styles.caption} aria-live="polite">
         {periodText}, {points.toLocaleString("en-US")} data points
       </p>
+    </div>
+  );
+}
+
+/** The rail's shape while its overview loads, at the same height so nothing shifts. */
+export function TimeRailSkeleton() {
+  return (
+    <div className={styles.wrap} aria-hidden="true">
+      <Skeleton height={HEIGHT} />
+      <span className={styles.caption}>
+        <Skeleton tone="text" width="15rem" />
+      </span>
     </div>
   );
 }

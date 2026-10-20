@@ -31,6 +31,11 @@
   --color-rule: light-dark(#d3dcd6, #36403c); /* borders */
   --color-grid: light-dark(#e3e9e5, #2c3431); /* chart gridlines */
 
+  /* Colour: loading placeholders. One sweep crosses every placeholder on the page at once. */
+  --color-skeleton: light-dark(#e6ece8, #2c3431); /* placeholder shapes */
+  --color-skeleton-sheen: light-dark(rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.07)); /* the sweep over shapes */
+  --color-skeleton-sweep: light-dark(rgb(27 35 49 / 0.05), rgb(255 255 255 / 0.04)); /* the sweep over empty areas */
+
   /* Colour: the one accent */
   --color-highlighter: light-dark(#f2d13a, #e8c531);
   --color-on-highlighter: #1b2331; /* text on the highlighter, in both themes */
@@ -126,6 +131,7 @@
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-shimmer: 1.8s; /* one loading sweep across the page */
 
   /* Layers */
   --z-header: 10;

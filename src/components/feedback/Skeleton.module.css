@@ -1,0 +1,43 @@
+.skeleton {
+  --sweep: var(--color-skeleton-sheen);
+
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-control);
+  background-color: var(--color-skeleton);
+  /* The band is sized and positioned against the viewport (fixed), so every placeholder shows the same sweep. */
+  background-image: linear-gradient(100deg, transparent 35%, var(--sweep) 50%, transparent 65%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: 100vw 100%;
+  animation: sweep var(--duration-shimmer) ease-in-out infinite;
+}
+
+/* One line of text: takes the line's height and baseline; drawn inset so it reads as type rather than a box. */
+.skeleton[data-tone="text"] {
+  clip-path: inset(0.2lh 0 round var(--radius-control));
+}
+
+.skeleton[data-tone="area"] {
+  --sweep: var(--color-skeleton-sweep);
+
+  border-radius: 0;
+  background-color: transparent;
+}
+
+@keyframes sweep {
+  from {
+    background-position: -100vw 0;
+  }
+
+  to {
+    background-position: 100vw 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background-image: none;
+  }
+}

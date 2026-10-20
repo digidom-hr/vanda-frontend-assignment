@@ -6,6 +6,7 @@ import { ChartSyncProvider } from "@/components/charts/ChartSync";
 import { chartTable } from "@/components/charts/chart-table";
 import type { ChartSpec } from "@/components/charts/chart-options";
 import { preloadTimeChart, TimeChart } from "@/components/charts/TimeChart";
+import { Skeleton } from "@/components/feedback/Skeleton";
 import { Panel, SLOW_LOAD_MESSAGE, SLOW_LOAD_MS } from "@/components/panel/Panel";
 import { useDashboardState } from "@/hooks/useDashboardState";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
@@ -21,14 +22,14 @@ import {
 } from "@/lib/dashboard";
 import { formatFacetValue, formatTimestamp, formatValue } from "@/lib/format";
 import { toIsoDate } from "@/lib/time";
-import { MAX_SELECTED_SERIES, resolveRange } from "@/lib/url-state";
+import { DEFAULT_RANGE, MAX_SELECTED_SERIES, resolveRange } from "@/lib/url-state";
 import { getService, type ServiceId } from "@/services/registry";
 import type { SeriesColumns } from "@/services/types";
 import { DASHBOARDS } from "./configs";
 import { panelAvailable, type ChartPanelDefinition, type PanelContext, type PanelDefinition } from "./panels";
 import styles from "./ServiceDashboard.module.css";
-import { SeriesPicker, type SeriesPickerProps } from "./SeriesPicker";
-import { TimeRail } from "./TimeRail";
+import { SeriesPicker, SeriesPickerSkeleton, type SeriesPickerProps } from "./SeriesPicker";
+import { TimeRail, TimeRailSkeleton } from "./TimeRail";
 import { TransformEditor } from "./TransformEditor";
 import { FrequencyControl, RangeControl } from "./ViewControls";
 
@@ -173,13 +174,17 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   return (
     <div className={styles.layout}>
       <aside className={styles.sidebar} aria-label={`${service.label} series`}>
-        {pickerProps ? <SeriesPicker {...pickerProps} /> : <div className={styles.pickerLoading} aria-busy="true" />}
+        {pickerProps ? <SeriesPicker {...pickerProps} /> : <SeriesPickerSkeleton label={`${service.label} series`} />}
       </aside>
 
       <div className={styles.main}>
         <header className={styles.header}>
           <div className={styles.heading}>
-            <h1 className={styles.title}>{primary?.name ?? service.label}</h1>
+            {catalog.isPending ? (
+              <HeadingSkeleton label={service.label} />
+            ) : (
+              <h1 className={styles.title}>{primary?.name ?? service.label}</h1>
+            )}
             {primary && (
               <p className={styles.facts}>
                 <span>{primary.id}</span>
@@ -191,7 +196,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
               </p>
             )}
           </div>
-          {pickerProps && <MobilePicker {...pickerProps} />}
+          {pickerProps ? <MobilePicker {...pickerProps} /> : <MobilePickerSkeleton />}
         </header>
 
         {selection.missing.length > 0 && (
@@ -203,14 +208,16 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
 
         <div className={styles.controls}>
           <FrequencyControl
-            frequencies={commonFrequencies(selection.series)}
+            // Until the series are known, offer the service's frequencies: the
+            // usual outcome, and the control keeps its final size while loading.
+            frequencies={catalog.isPending ? service.frequencies : commonFrequencies(selection.series)}
             value={frequency}
             onChange={(f) => actions.setFrequency(f === primary?.frequencies[0] ? null : f)}
           />
           <RangeControl preset={state.preset} from={state.from} to={state.to} onPreset={actions.setPreset} />
         </div>
 
-        {overviewSeries && range && (
+        {overviewSeries && range ? (
           <TimeRail
             label={`Time range for ${primary?.name ?? service.label}`}
             t={overviewSeries.t}
@@ -218,6 +225,8 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
             range={range}
             onCommit={({ min, max }) => actions.setCustomRange(toIsoDate(min), toIsoDate(max))}
           />
+        ) : (
+          (catalog.isPending || (primary !== undefined && overview.isPending)) && <TimeRailSkeleton />
         )}
 
         {tooLarge && (
@@ -301,7 +310,7 @@ function DashboardPanel({
   return (
     <Panel
       title={panel.title}
-      subtitle={ctx ? panel.subtitle?.(ctx) : undefined}
+      subtitle={ctx ? panel.subtitle?.(ctx) : subtitlePlaceholder(panel)}
       readout={latestReadout(spec)}
       status={ctx ? status : status === "error" ? "error" : "pending"}
       error={error}
@@ -320,6 +329,98 @@ function DashboardPanel({
     </Panel>
   );
 }
+
+/**
+ * A panel's subtitle before its context (series, frequency) is known: the text
+ * itself when it is fixed, otherwise a placeholder (short: e.g. "Daily").
+ */
+function subtitlePlaceholder(panel: ChartPanelDefinition): ReactNode {
+  if (panel.staticSubtitle) return panel.staticSubtitle;
+  return panel.subtitle ? <Skeleton tone="text" width="3.5rem" /> : undefined;
+}
+
+/** The page title and its facts line while the catalog loads. */
+function HeadingSkeleton({ label }: { label: string }) {
+  return (
+    <>
+      <h1 className={styles.title}>
+        <span className="visually-hidden">{label}</span>
+        <Skeleton tone="text" width="min(20rem, 55vw)" />
+      </h1>
+      <p className={styles.facts}>
+        <Skeleton tone="text" width="14rem" />
+      </p>
+    </>
+  );
+}
+
+/** Holds the place of "Change series" on narrow screens. */
+function MobilePickerSkeleton() {
+  return (
+    <div className={styles.changeSeriesPlaceholder}>
+      <Skeleton width="8.5rem" height="var(--touch-target)" />
+    </div>
+  );
+}
+
+/**
+ * The whole page's shape before the dashboard can render (the server-rendered
+ * HTML, while the page reads its view from the URL). Same layout, panels and
+ * placeholders as the dashboard's own loading state, so nothing jumps when it
+ * takes over.
+ */
+export function ServiceDashboardSkeleton({ serviceId }: { serviceId: ServiceId }) {
+  const service = getService(serviceId);
+  const config = DASHBOARDS[serviceId];
+  return (
+    <div className={styles.layout}>
+      <aside className={styles.sidebar} aria-label={`${service.label} series`}>
+        <SeriesPickerSkeleton label={`${service.label} series`} />
+      </aside>
+      <div className={styles.main} aria-busy="true">
+        <header className={styles.header}>
+          <div className={styles.heading}>
+            <HeadingSkeleton label={service.label} />
+          </div>
+          <MobilePickerSkeleton />
+        </header>
+        {/* The same controls the dashboard shows before its data arrives, so nothing shifts. */}
+        <div className={styles.controls}>
+          <FrequencyControl frequencies={service.frequencies} value={resolveFrequency([], null)} onChange={noop} />
+          <RangeControl preset={DEFAULT_RANGE} from={null} to={null} onPreset={noop} />
+        </div>
+        <TimeRailSkeleton />
+        <div className={styles.panels}>
+          {config.panels.map((panel) =>
+            panel.kind === "custom" ? (
+              <panel.Component key={panel.id} ctx={null} onShowSeries={noop} className={LAYOUT_CLASS[panel.layout]} />
+            ) : (
+              <Panel
+                key={panel.id}
+                title={panel.title}
+                subtitle={subtitlePlaceholder(panel)}
+                status="pending"
+                explainSlowLoad={false}
+                bodyHeight={panel.bodyHeight}
+                variant={panel.layout === "primary" ? "primary" : "secondary"}
+                className={LAYOUT_CLASS[panel.layout]}
+                toolbar={
+                  panel.layout === "primary" ? (
+                    <Skeleton width="6.75rem" height="1.75rem" radius="var(--radius-pill)" />
+                  ) : undefined
+                }
+              >
+                {null}
+              </Panel>
+            ),
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function noop(): void {}
 
 /** On narrow screens the series list opens as a sheet. */
 function MobilePicker(props: SeriesPickerProps) {

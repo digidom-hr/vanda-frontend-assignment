@@ -44,6 +44,29 @@ describe("Panel", () => {
     expect(container.querySelector("[style*='min-height: 200px']")).not.toBeNull();
   });
 
+  it("shows placeholders for the chart and its value while loading, hidden from assistive technology", () => {
+    const { container, rerender } = renderPanel({ status: "pending" });
+    const header = container.querySelector("header") as HTMLElement;
+    expect(header.querySelector("[data-tone='text']")).not.toBeNull();
+    expect(container.querySelector("[data-tone='area']")).not.toBeNull();
+    for (const placeholder of container.querySelectorAll("[data-tone]")) {
+      expect(placeholder).toHaveAttribute("aria-hidden", "true");
+    }
+
+    rerender(
+      <Panel title="Price" status="success" bodyHeight={200} readout="182.40 USD">
+        <div>chart</div>
+      </Panel>,
+    );
+    expect(container.querySelector("[data-tone]")).toBeNull();
+  });
+
+  it("can show list rows as its placeholder", () => {
+    const { container } = renderPanel({ status: "pending", placeholder: "list" });
+    expect(container.querySelector("[data-tone='area']")).toBeNull();
+    expect(container.querySelectorAll("[data-placeholder='list'] [data-tone='text']").length).toBeGreaterThan(10);
+  });
+
   it("explains a load that takes longer than usual", () => {
     vi.useFakeTimers();
     try {

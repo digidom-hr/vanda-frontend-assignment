@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Autocomplete, Button, Input, ListBox, ListBoxItem, SearchField } from "react-aria-components";
+import { Skeleton } from "@/components/feedback/Skeleton";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { useSearch } from "@/hooks/useSearch";
@@ -13,6 +14,9 @@ import { findService } from "@/services/registry";
 import styles from "./SearchPanel.module.css";
 
 const EXAMPLES = ["Acme", "ACMC", "B-0101", "Europe hedge", "Japan equity"];
+
+/** Name widths for the placeholder rows shown before the first results arrive. */
+const PLACEHOLDER_ROWS = ["58%", "72%", "46%"];
 
 /** Where a search result leads: its service page with the series in view. */
 export function seriesHref(result: Pick<SearchResult, "service" | "id">): string {
@@ -115,11 +119,28 @@ export function SearchPanel({ variant, onNavigate }: SearchPanelProps) {
         )}
 
         {active && !data && !error && (
-          <p className={styles.status} role="status">
-            {slow
-              ? "Still searching. If the data services have been idle, they can take up to a minute to start."
-              : "Searching"}
-          </p>
+          <>
+            <div className={styles.results} aria-hidden="true">
+              {PLACEHOLDER_ROWS.map((width) => (
+                <div key={width} className={styles.result}>
+                  <span className={styles.name}>
+                    <Skeleton tone="text" width={width} />
+                  </span>
+                  <span className={styles.placeholderService}>
+                    <Skeleton tone="text" width="3.5rem" />
+                  </span>
+                  <span className={styles.meta}>
+                    <Skeleton tone="text" width="11rem" />
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className={slow ? styles.status : "visually-hidden"} role="status">
+              {slow
+                ? "Still searching. If the data services have been idle, they can take up to a minute to start."
+                : "Searching"}
+            </p>
+          </>
         )}
 
         {active && data && (

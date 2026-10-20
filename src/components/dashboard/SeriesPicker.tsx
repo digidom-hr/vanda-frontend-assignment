@@ -12,6 +12,7 @@ import {
   SearchField,
   type Key,
 } from "react-aria-components";
+import { Skeleton } from "@/components/feedback/Skeleton";
 import { formatFacetValue } from "@/lib/format";
 import { matchesQuery } from "@/lib/search";
 import type { SeriesMeta } from "@/services/types";
@@ -150,6 +151,45 @@ export function SeriesPicker({
           )}
         </Collection>
       </GridList>
+    </div>
+  );
+}
+
+/** Group sizes and name widths for the placeholder: varied, so it reads as a real list. */
+const PLACEHOLDER_GROUPS = [
+  ["74%", "58%", "66%", "50%", "70%"],
+  ["62%", "78%", "54%", "68%"],
+  ["56%", "72%", "60%"],
+];
+
+/** The picker's shape while the catalog loads: a filter box, then grouped rows. */
+export function SeriesPickerSkeleton({ label }: { label: string }) {
+  return (
+    <div className={styles.picker} aria-busy="true">
+      <span className="visually-hidden">Loading {label}</span>
+      <Skeleton height="var(--control-height)" />
+      <div className={styles.placeholderList}>
+        {PLACEHOLDER_GROUPS.map((rows, g) => (
+          <div key={g}>
+            <div className={styles.header}>
+              <Skeleton tone="text" width="5.5rem" />
+            </div>
+            {rows.map((width, r) => (
+              <div key={r} className={styles.placeholderItem}>
+                <Skeleton width={14} height={14} radius={3} />
+                <span className={styles.placeholderText}>
+                  <span className={styles.placeholderName}>
+                    <Skeleton tone="text" width={width} />
+                  </span>
+                  <span className={styles.placeholderMeta}>
+                    <Skeleton tone="text" width="3.5rem" />
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
