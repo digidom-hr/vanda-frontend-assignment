@@ -175,7 +175,7 @@ export function Panel({
           </Heading>
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
-        <div className={styles.headerEnd}>
+        <div className={styles.headerEnd} data-tour={table ? "panel-view" : undefined}>
           {readout ? (
             <div className={styles.readout}>{readout}</div>
           ) : (

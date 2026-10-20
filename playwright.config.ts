@@ -8,6 +8,20 @@ import { defineConfig, devices } from "@playwright/test";
 const WEB_PORT = 3210;
 const API_PORT = 4000;
 
+/**
+ * Every test starts with the onboarding tour already seen, so it doesn't
+ * cover the page; the tour's own tests start from a clean state.
+ */
+const TOUR_SEEN = {
+  cookies: [],
+  origins: [
+    {
+      origin: `http://localhost:${WEB_PORT}`,
+      localStorage: [{ name: "vanda-timeseries:tour", value: "done" }],
+    },
+  ],
+};
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -18,6 +32,7 @@ export default defineConfig({
     baseURL: `http://localhost:${WEB_PORT}`,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
+    storageState: TOUR_SEEN,
   },
   projects: [
     {

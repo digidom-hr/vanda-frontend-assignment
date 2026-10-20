@@ -31,7 +31,12 @@ export function SearchDialog() {
 
   return (
     <DialogTrigger isOpen={isOpen} onOpenChange={setOpen}>
-      <Button className={styles.trigger} aria-label="Search series" aria-keyshortcuts="Meta+K Control+K /">
+      <Button
+        className={styles.trigger}
+        data-tour="search"
+        aria-label="Search series"
+        aria-keyshortcuts="Meta+K Control+K /"
+      >
         <Icon name="search" />
         <span className={styles.label}>Search series</span>
         <kbd className={styles.kbd} aria-hidden="true">

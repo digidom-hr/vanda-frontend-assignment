@@ -77,7 +77,7 @@ export function TransformEditor({ transforms, onChange, frequency }: TransformEd
   const noun = STEP_NOUN[frequency];
 
   return (
-    <Group aria-label="Transforms" className={styles.editor}>
+    <Group aria-label="Transforms" className={styles.editor} data-tour="transforms">
       {transforms.length > 0 && (
         <ol className={styles.chain} aria-label="Applied transforms, in order">
           {transforms.map((spec, i) => (

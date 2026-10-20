@@ -65,6 +65,18 @@
   line-height: 1.75rem;
 }
 
+/* Narrow phones: the logo alone, so search, tour and theme fit beside it. The name stays for screen readers. */
+@media (max-width: 30rem) {
+  .product {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .search {
   grid-area: search;
   display: flex;
