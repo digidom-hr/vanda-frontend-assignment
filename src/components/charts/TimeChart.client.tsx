@@ -19,13 +19,21 @@ export default function TimeChartClient({ spec }: TimeChartProps) {
   const ref = useRef<HighchartsReactRefObject>(null);
   const sync = useChartSync();
 
-  // Join the page's chart group, so the navigator can move every chart at once.
+  // Join the page's chart group: the navigator moves every chart, and "Link hover" marks a date in all.
   useEffect(() => {
     const chart = ref.current?.chart;
     return sync && chart ? sync.register(chart) : undefined;
   }, [sync]);
 
-  const options = useMemo(() => buildChartOptions(spec, tokens, { reducedMotion }), [spec, tokens, reducedMotion]);
+  // Highcharts passes the chart the pointer is in, so no ref is read here.
+  const options = useMemo(
+    () =>
+      buildChartOptions(spec, tokens, {
+        reducedMotion,
+        onHover: sync ? (x, chart) => sync.hover(chart, x) : undefined,
+      }),
+    [spec, tokens, reducedMotion, sync],
+  );
 
   // The page's range, unless this chart was zoomed or panned on its own.
   const { zoomed, reset } = useChartRange(ref, spec.range);

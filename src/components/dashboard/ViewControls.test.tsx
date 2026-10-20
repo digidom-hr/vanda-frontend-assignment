@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
-import { FrequencyControl, RangeControl } from "./ViewControls";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { FrequencyControl, LinkHoverSwitch, RangeControl } from "./ViewControls";
 
 describe("FrequencyControl", () => {
   it("offers the available frequencies", async () => {
@@ -34,5 +34,21 @@ describe("RangeControl", () => {
     render(<RangeControl preset="1Y" from="2025-07-01" to="2025-09-30" onPreset={() => {}} />);
     expect(screen.getByText("1 Jul 2025 to 30 Sep 2025")).toBeInTheDocument();
     expect(screen.getAllByRole("radio").some((r) => (r as HTMLInputElement).checked)).toBe(false);
+  });
+});
+
+describe("LinkHoverSwitch", () => {
+  beforeEach(() => window.localStorage.clear());
+
+  it("is off by default, and remembers being turned on", async () => {
+    const { unmount } = render(<LinkHoverSwitch />);
+    const link = screen.getByRole("switch", { name: "Link hover" });
+    expect(link).not.toBeChecked();
+    await userEvent.click(link);
+    expect(link).toBeChecked();
+    unmount();
+
+    render(<LinkHoverSwitch />);
+    expect(screen.getByRole("switch", { name: "Link hover" })).toBeChecked();
   });
 });

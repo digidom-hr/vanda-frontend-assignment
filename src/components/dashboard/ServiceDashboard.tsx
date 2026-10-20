@@ -13,6 +13,7 @@ import { Panel, SLOW_LOAD_MESSAGE, SLOW_LOAD_MS } from "@/components/panel/Panel
 import { ServiceTour } from "@/components/tour/ServiceTour";
 import { useDashboardState } from "@/hooks/useDashboardState";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
+import { useLinkHover } from "@/hooks/useLinkHover";
 import { useSeriesList, useTimeseries } from "@/hooks/useServiceData";
 import { ApiError } from "@/lib/api-client";
 import {
@@ -35,7 +36,7 @@ import { panelAvailable, type ChartPanelDefinition, type PanelContext, type Pane
 import styles from "./ServiceDashboard.module.css";
 import { SeriesPicker, SeriesPickerSkeleton, type SeriesPickerProps } from "./SeriesPicker";
 import { TransformEditor } from "./TransformEditor";
-import { FrequencyControl, RangeControl } from "./ViewControls";
+import { FrequencyControl, LinkHoverSwitch, RangeControl } from "./ViewControls";
 
 /** Explicit layout → class map: layout names are data, not CSS class names. */
 const LAYOUT_CLASS: Record<PanelDefinition["layout"], string | undefined> = {
@@ -69,6 +70,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
   const service = getService(serviceId);
   const config = DASHBOARDS[serviceId];
   const [state, actions] = useDashboardState(service);
+  const [linkHover] = useLinkHover();
 
   // Fetch the chart code in parallel with the data rather than after it.
   useEffect(() => {
@@ -263,6 +265,8 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
             onChange={(f) => actions.setFrequency(f === primary?.frequencies[0] ? null : f)}
           />
           <RangeControl preset={state.preset} from={state.from} to={state.to} onPreset={actions.setPreset} />
+          {/* Linking hover needs at least two charts (charlie has one, beside its signal board). */}
+          {chartCount(panels) > 1 && <LinkHoverSwitch />}
         </div>
 
         {tooLarge && (
@@ -283,7 +287,7 @@ export function ServiceDashboard({ serviceId }: { serviceId: ServiceId }) {
           </p>
         )}
 
-        <ChartSyncProvider>
+        <ChartSyncProvider linkHover={linkHover}>
           <div className={styles.panels}>
             {panels.map((panel) =>
               panel.kind === "custom" ? (
@@ -412,6 +416,11 @@ function MobilePickerSkeleton() {
  * placeholders as the dashboard's own loading state, so nothing jumps when it
  * takes over.
  */
+/** How many of the panels are charts (custom panels, like charlie's signal board, aren't). */
+function chartCount(panels: readonly PanelDefinition[]): number {
+  return panels.filter((panel) => panel.kind !== "custom").length;
+}
+
 export function ServiceDashboardSkeleton({ serviceId }: { serviceId: ServiceId }) {
   const service = getService(serviceId);
   const config = DASHBOARDS[serviceId];
@@ -431,6 +440,7 @@ export function ServiceDashboardSkeleton({ serviceId }: { serviceId: ServiceId }
         <div className={styles.controls}>
           <FrequencyControl frequencies={service.frequencies} value={resolveFrequency([], null)} onChange={noop} />
           <RangeControl preset={DEFAULT_RANGE} from={null} to={null} onPreset={noop} />
+          {chartCount(config.panels) > 1 && <LinkHoverSwitch />}
         </div>
         <div className={styles.panels}>
           {config.panels.map((panel) =>

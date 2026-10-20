@@ -24,7 +24,7 @@ export const SERVICE_TOUR: readonly TourStep[] = [
   {
     targets: ["view-controls"],
     title: "Frequency and period",
-    text: "Switch between daily, weekly, monthly or 5-minute data, and pick a period from the last month to the full history.",
+    text: "Switch between daily, weekly, monthly or 5-minute data, and pick a period from the last month to the full history. Link hover marks the date you point at in every chart.",
   },
   {
     targets: ["transforms"],
