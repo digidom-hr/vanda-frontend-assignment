@@ -8,7 +8,7 @@
  *   ?series=A-0001,A-0013   selected series; the first is the primary one
  *   &freq=5min              frequency
  *   &range=6M               preset, relative to the last data point
- *   &from=2025-07-01&to=…   custom range (from the time rail); overrides range
+ *   &from=2025-07-01&to=…   custom range (from the range navigator); overrides range
  *   &tf=ma:20,pct:1         transform chain, applied left to right
  */
 import { isIsoDate, parseTimestamp } from "./time";

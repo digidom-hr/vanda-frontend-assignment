@@ -84,6 +84,9 @@ export interface ChartTokens {
   readonly graphite: string;
   readonly rule: string;
   readonly grid: string;
+  /** The one accent, and its translucent wash (e.g. the navigator's selected period). */
+  readonly highlighter: string;
+  readonly highlighterWash: string;
   readonly fontFamily: string;
   readonly colors: Readonly<Record<SeriesColorRole, string>>;
 }
@@ -185,7 +188,7 @@ export function buildChartOptions(spec: ChartSpec, tokens: ChartTokens, options:
     credits: { enabled: false },
     exporting: { enabled: false },
     time: { timezone: "UTC" },
-    // This app draws its own shared time rail; per-chart Stock chrome is off.
+    // One shared navigator (under the primary chart) sets the range for every panel; per-chart Stock chrome is off.
     navigator: { enabled: false },
     scrollbar: { enabled: false },
     rangeSelector: { enabled: false },

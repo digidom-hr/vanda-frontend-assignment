@@ -6,6 +6,7 @@ import type { SeriesMeta } from "@/services/types";
 import { stubApi } from "@/test/render";
 import { ServiceDashboard } from "./ServiceDashboard";
 
+vi.mock("@/components/charts/RangeNavigator.client", () => ({ default: () => null }));
 vi.mock("@/components/charts/TimeChart", () => ({
   preloadTimeChart: vi.fn(),
   TimeChart: ({ spec }: { spec: { title: string } }) => <div data-testid="chart">{spec.title}</div>,

@@ -18,6 +18,15 @@ vi.mock("@/components/charts/TimeChart", () => ({
   ),
 }));
 
+// The navigator is Highcharts; here a stand-in reports a range like it does.
+vi.mock("@/components/charts/RangeNavigator.client", () => ({
+  default: ({ onCommit }: { onCommit: (range: { min: number; max: number }) => void }) => (
+    <button type="button" onClick={() => onCommit({ min: Date.UTC(2025, 11, 30), max: Date.UTC(2025, 11, 31) })}>
+      Pick 30 to 31 Dec
+    </button>
+  ),
+}));
+
 const meta = (id: string, name: string, frequencies: SeriesMeta["frequencies"] = ["daily"]): SeriesMeta => ({
   service: "alpha",
   id,
@@ -89,6 +98,17 @@ describe("ServiceDashboard", () => {
     expect(await screen.findByRole("heading", { level: 1, name: "Acme Corp (ACMC)" })).toBeInTheDocument();
     expect(await screen.findByTestId("chart")).toHaveTextContent("Acme Corp (ACMC) (USD)");
     expect(screen.getByText("101.00 USD")).toBeInTheDocument();
+  });
+
+  it("puts the range navigator under the primary chart, and it sets the period", async () => {
+    const { onUrlUpdate, user } = setup();
+    const price = await screen.findByRole("region", { name: "Price" });
+    const navigator = await within(price).findByRole("group", { name: "Time range for Acme Corp (ACMC)" });
+    expect(within(navigator).getByText("30 Dec 2025 to 31 Dec 2025, 2 data points")).toBeInTheDocument();
+
+    await user.click(await within(navigator).findByRole("button", { name: "Pick 30 to 31 Dec" }));
+    const params = onUrlUpdate.mock.calls.at(-1)?.[0].searchParams;
+    expect([params?.get("from"), params?.get("to")]).toEqual(["2025-12-30", "2025-12-31"]);
   });
 
   it("opens the series a search result linked to", async () => {
@@ -174,7 +194,7 @@ describe("ServiceDashboard", () => {
     );
     expect(await screen.findByText("Loading Price")).toBeInTheDocument();
     expect(screen.getByText("Loading Rank among 40")).toBeInTheDocument();
-    // The picker, title and time rail hold their places too.
+    // The picker, title and range navigator hold their places too.
     expect(screen.getByText("Loading Alpha series")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1, name: "Alpha" })).toBeInTheDocument();
     expect(screen.getByRole("complementary", { name: "Alpha series" }).querySelector("[data-tone]")).not.toBeNull();

@@ -25,6 +25,8 @@ export interface PanelProps {
   readonly readout?: ReactNode;
   /** Controls that belong to this panel (e.g. transform chips). */
   readonly toolbar?: ReactNode;
+  /** Content under the body that stays in every state and view, e.g. the range navigator. */
+  readonly footer?: ReactNode;
   readonly status: "pending" | "error" | "success";
   readonly error?: unknown;
   readonly onRetry?: () => void;
@@ -72,6 +74,7 @@ export function Panel({
   subtitle,
   readout,
   toolbar,
+  footer,
   status,
   error,
   onRetry,
@@ -194,6 +197,8 @@ export function Panel({
           {body}
         </PanelErrorBoundary>
       </div>
+
+      {footer && <div className={styles.footer}>{footer}</div>}
     </section>
   );
 }
