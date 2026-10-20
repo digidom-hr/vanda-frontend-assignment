@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from "react-aria-components";
+import { Icon } from "@/components/icons/Icon";
 import styles from "./SearchDialog.module.css";
 import { SearchPanel } from "./SearchPanel";
 
@@ -31,10 +32,7 @@ export function SearchDialog() {
   return (
     <DialogTrigger isOpen={isOpen} onOpenChange={setOpen}>
       <Button className={styles.trigger} aria-label="Search series" aria-keyshortcuts="Meta+K Control+K /">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.6" />
-          <path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <Icon name="search" />
         <span className={styles.label}>Search series</span>
         <kbd className={styles.kbd} aria-hidden="true">
           /

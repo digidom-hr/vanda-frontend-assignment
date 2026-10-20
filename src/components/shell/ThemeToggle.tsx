@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore, type ReactNode } from "react";
 import { SegmentedControl } from "@/components/controls/SegmentedControl";
+import { Icon } from "@/components/icons/Icon";
 import {
   applyThemePreference,
   readThemePreference,
@@ -33,50 +34,10 @@ function setPreference(preference: ThemePreference): void {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
-const icon = (path: ReactNode) => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
-    {path}
-  </svg>
-);
-
 const OPTIONS: { id: ThemePreference; label: string; icon: ReactNode }[] = [
-  {
-    id: "system",
-    label: "Use system theme",
-    icon: icon(
-      <>
-        <rect x="1.75" y="2.75" width="12.5" height="8.5" rx="1.25" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M5.5 13.75h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </>,
-    ),
-  },
-  {
-    id: "light",
-    label: "Use light theme",
-    icon: icon(
-      <>
-        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
-        <path
-          d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.06 1.06M11.54 11.54l1.06 1.06M3.4 12.6l1.06-1.06M11.54 4.46l1.06-1.06"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </>,
-    ),
-  },
-  {
-    id: "dark",
-    label: "Use dark theme",
-    icon: icon(
-      <path
-        d="M13.5 9.6A5.75 5.75 0 0 1 6.4 2.5a5.75 5.75 0 1 0 7.1 7.1Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />,
-    ),
-  },
+  { id: "system", label: "Use system theme", icon: <Icon name="monitor" /> },
+  { id: "light", label: "Use light theme", icon: <Icon name="sun" /> },
+  { id: "dark", label: "Use dark theme", icon: <Icon name="moon" /> },
 ];
 
 export function ThemeToggle() {

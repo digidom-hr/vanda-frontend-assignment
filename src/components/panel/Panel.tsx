@@ -5,6 +5,7 @@ import type { TableData } from "@/components/charts/chart-table";
 import { SegmentedControl } from "@/components/controls/SegmentedControl";
 import { VandaLogo } from "@/components/brand/VandaLogo";
 import { Skeleton } from "@/components/feedback/Skeleton";
+import { Icon } from "@/components/icons/Icon";
 import { ApiError } from "@/lib/api-client";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { DataTable } from "./DataTable";
@@ -106,9 +107,12 @@ export function Panel({
 
   const failure = (message: string, retry?: () => void) => (
     <div className={styles.state} role="alert">
+      {/* An icon as well as the colour, so the error doesn't rely on colour alone. */}
+      <Icon name="circle-alert" size={20} />
       <p>{message}</p>
       {retry && (
         <button type="button" className={styles.retry} onClick={retry}>
+          <Icon name="rotate-ccw" size={14} />
           Try again
         </button>
       )}

@@ -16,6 +16,7 @@ import {
   RadioGroup,
   Text,
 } from "react-aria-components";
+import { Icon } from "@/components/icons/Icon";
 import { transformLabel, type TransformKind, type TransformSpec } from "@/lib/transforms/pipeline";
 import { MAX_TRANSFORM_STEPS, MAX_TRANSFORM_WINDOW } from "@/lib/url-state";
 import type { Frequency } from "@/services/types";
@@ -93,9 +94,7 @@ export function TransformEditor({ transforms, onChange, frequency }: TransformEd
                   aria-label={`Remove ${transformLabel(spec)}`}
                   onPress={() => onChange(transforms.filter((_, j) => j !== i))}
                 >
-                  <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-                    <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
+                  <Icon name="x" size={12} />
                 </Button>
               </li>
             </Fragment>
@@ -105,6 +104,7 @@ export function TransformEditor({ transforms, onChange, frequency }: TransformEd
 
       <DialogTrigger>
         <Button className={styles.add} isDisabled={full}>
+          <Icon name="plus" size={14} />
           {transforms.length ? "Add another" : "Add transform"}
         </Button>
         <Popover placement="bottom start" className={styles.popover}>

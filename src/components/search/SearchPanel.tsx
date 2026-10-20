@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Autocomplete, Button, Input, ListBox, ListBoxItem, SearchField } from "react-aria-components";
 import { Skeleton } from "@/components/feedback/Skeleton";
+import { Icon } from "@/components/icons/Icon";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { useSearch } from "@/hooks/useSearch";
@@ -76,15 +77,10 @@ export function SearchPanel({ variant, onNavigate }: SearchPanelProps) {
     <div className={styles.panel} data-variant={variant}>
       <Autocomplete inputValue={input} onInputChange={setInput}>
         <SearchField aria-label="Search series" className={styles.field} autoFocus={variant === "dialog"}>
-          <svg className={styles.icon} width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.6" />
-            <path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
+          <Icon name="search" className={styles.icon} />
           <Input className={styles.input} placeholder="Company, ticker, id, sector or region" />
           <Button className={styles.clear} aria-label="Clear search">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
+            <Icon name="x" size={14} />
           </Button>
         </SearchField>
 
@@ -106,6 +102,7 @@ export function SearchPanel({ variant, onNavigate }: SearchPanelProps) {
           <div className={styles.notice} role="alert">
             <p>{error instanceof ApiError ? error.message : "Search failed."}</p>
             <button type="button" className={styles.retry} onClick={() => void refetch()}>
+              <Icon name="rotate-ccw" size={14} />
               Try again
             </button>
           </div>
