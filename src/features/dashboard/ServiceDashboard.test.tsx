@@ -44,8 +44,10 @@ const meta = (id: string, name: string, frequencies: SeriesMeta["frequencies"] =
 
 const CATALOG = [meta("A-0001", "Acme Corp (ACMC)", ["daily", "5min"]), meta("A-0013", "Lumen Technologies (LUMT)")];
 
-function api({ failCatalog = false, tooLarge = false } = {}) {
+function api({ failCatalog = false, tooLarge = false, holdIds = [] as string[] } = {}) {
   return stubApi((url) => {
+    // Data for these series never arrives: the page stays in its loading state.
+    if (holdIds.some((id) => url.searchParams.get("ids")?.includes(id))) return new Promise<Response>(() => {});
     if (tooLarge && url.searchParams.get("frequency") === "5min") {
       return Response.json(
         {
@@ -79,11 +81,11 @@ function api({ failCatalog = false, tooLarge = false } = {}) {
   });
 }
 
-function setup(search = "", options?: { failCatalog?: boolean; tooLarge?: boolean }) {
+function setup(search = "", options?: { failCatalog?: boolean; tooLarge?: boolean; holdIds?: string[] }) {
   return setupWithClient(search, options);
 }
 
-function setupWithClient(search = "", options?: { failCatalog?: boolean; tooLarge?: boolean }) {
+function setupWithClient(search = "", options?: { failCatalog?: boolean; tooLarge?: boolean; holdIds?: string[] }) {
   const fetchMock = api(options);
   const onUrlUpdate = vi.fn<(e: UrlUpdateEvent) => void>();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -122,6 +124,18 @@ describe("ServiceDashboard", () => {
     // 30 to 31 Dec is the whole (two-day) history: a drag at its end changes nothing.
     await user.click(await within(navigator).findByRole("button", { name: "Pick 30 to 31 Dec" }));
     expect(onUrlUpdate).not.toHaveBeenCalled();
+  });
+
+  it("shows another series as loading while its data arrives, not as empty", async () => {
+    const { user } = setup("", { holdIds: ["A-0013"] });
+    expect(await screen.findByTestId("chart")).toHaveTextContent("Acme Corp (ACMC)");
+
+    await user.click(screen.getByText("Lumen Technologies (LUMT)"));
+    expect(await screen.findByRole("heading", { level: 1, name: "Lumen Technologies (LUMT)" })).toBeInTheDocument();
+    // Acme's data is still in hand, but it isn't Lumen's: no "no data", no Acme chart.
+    expect(screen.queryByText(/No data in this range/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId("chart")).not.toBeInTheDocument();
+    expect(screen.getByText("Loading Price")).toBeInTheDocument();
   });
 
   it("opens the series a search result linked to", async () => {

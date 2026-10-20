@@ -86,12 +86,23 @@
 .body {
   position: relative;
   min-width: 0;
+}
+
+.body > * {
   transition: opacity var(--duration-base) var(--ease-out);
 }
 
-/* Refetch keeps the frame, dimmed. */
-.body[data-refreshing] {
-  opacity: 0.55;
+/* Refetch keeps the chart in place, faded back under the "Updating" layer (not the layer itself). */
+.body[data-refreshing] > :not(.updating) {
+  opacity: 0.4;
+}
+
+/* Over a chart whose new data is on its way: the loading sweep and the "Updating" pill. */
+.updating {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: label-in var(--duration-base) var(--ease-out);
 }
 
 .loading {
@@ -135,9 +146,11 @@
   border-top: 0;
 }
 
-/* Vanda's in-panel loading pattern: the V mark and "Loading …", centred on the placeholder. */
+/* Vanda's in-panel loading pattern: the V mark and "Loading …" (or "Updating …"), centred, with a purple glint passing over it. */
 .loadingLabel {
   position: absolute;
+  overflow: hidden;
+  border: 1px solid var(--color-rule);
   top: 50%;
   left: 50%;
   display: flex;
@@ -154,8 +167,23 @@
   animation: label-in var(--duration-base) var(--ease-out);
 }
 
+.loadingLabel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, var(--color-accent-wash) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: glint 1.8s ease-in-out infinite;
+}
+
 .loadingMark {
   animation: breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes glint {
+  to {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes label-in {
@@ -172,8 +200,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .loadingLabel,
-  .loadingMark {
+  .loadingMark,
+  .updating {
     animation: none;
+  }
+
+  .loadingLabel::after {
+    display: none;
   }
 }
 
